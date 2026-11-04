@@ -2,16 +2,15 @@ package io.github.panda17tk.arpg.sim
 
 import io.github.panda17tk.arpg.math.Rng
 import io.github.panda17tk.arpg.planet.PlanetBiome
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
  * One deterministic vertical slice of Living Planets: land a LOST_CHILD nature world, save the child,
- * take off, return — and confirm the planet remembers and greets the player by that deed.
+ * take off, return — and confirm the planet still shows its record.
  */
 class LivingPlanetReturnVisitVerticalTest {
-    @Test fun `saving a lost child on a nature world is remembered and greeted on return`() {
+    @Test fun `saving a lost child on a nature world is remembered on return`() {
         val book = PlanetMemoryBook()
         val id = Planets.idFor(42L, 0)
         val ctx = PlanetContext(PlanetTemperament.GENTLE, SacredThing.CHILDREN, PlanetStorySeed.LOST_CHILD)
@@ -31,12 +30,11 @@ class LivingPlanetReturnVisitVerticalTest {
         // 3. Takeoff folds the visit into memory.
         book.remember(id, visit)
 
-        // 4. Returning, the planet remembers the kindness…
+        // 4. The recalled record still carries the deed and the gauge it moved.
         val ret = book.recall(id)
         assertTrue(ret.predatorKilledNearChild && ret.mercy > 0f)
 
-        // 5. …and greets the player warmly, in both the speech greeting and the objective HUD.
-        assertEquals(SocietySpeechTrigger.ReturnVisitMerciful, SocietySpeechLines.returnGreeting(ret))
-        assertTrue(SurfaceObjective.hudLine(PlanetBiome.NATURE, 0, ret, ctx, remembered = true).contains("借り"))
+        // 5. And the objective HUD shows the deed that the memory recorded.
+        assertTrue(SurfaceObjective.hudLine(PlanetBiome.NATURE, 0, ret, ctx).contains("捕食者を排除"), "no deed tag")
     }
 }

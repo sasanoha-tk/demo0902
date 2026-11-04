@@ -214,7 +214,7 @@ object WorldFactory {
         if (mode == WorldMode.SURFACE) worldState.escapePad = loaded.playerSpawnX to loaded.playerSpawnY
         worldState.vault = vaultPos // v2.95
         // v2.48 惑星サーバー: every surface carries its memory core — the star's Layer-1 archive,
-        // placed deterministically a walk away from the pad. Stand before it and it speaks once.
+        // placed deterministically a walk away from the pad.
         if (mode == WorldMode.SURFACE) {
             worldState.memoryCore = placeNear(map, Rng(seed xor 0x3E3C0DEL), loaded.playerSpawnX, loaded.playerSpawnY, 700f, 900f)
         }

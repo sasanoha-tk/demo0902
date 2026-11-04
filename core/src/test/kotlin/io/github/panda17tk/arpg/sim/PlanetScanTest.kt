@@ -2,7 +2,6 @@ package io.github.panda17tk.arpg.sim
 
 import io.github.panda17tk.arpg.planet.PlanetBiome
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -21,24 +20,21 @@ class PlanetScanTest {
         assertEquals(PlanetScan.UNVISITED, card.memoryLine)
     }
 
-    @Test fun `a hostile memory reuses ReturnVisitLine verbatim`() {
-        val memory = PlanetSocietyState(hostility = 0.4f)
+    @Test fun `a known planet prints its remembered gauges as numbers`() {
+        val memory = PlanetSocietyState(hostility = 0.4f, mercy = 0.2f)
         val card = PlanetScan.cardFor(planet(), known = true, memory = memory)
-        assertEquals(ReturnVisitLine.hudLine(memory), card.memoryLine)
-        assertEquals("この星はあなたを敵として覚えている", card.memoryLine)
+        assertEquals("再訪　敵対 40　好意 20", card.memoryLine)
     }
 
-    @Test fun `a faint memory reads 訪問済み　記憶は薄い`() {
-        val memory = PlanetSocietyState(hostility = 0.2f, mercy = 0.2f)
-        val card = PlanetScan.cardFor(planet(), known = true, memory = memory)
-        assertEquals(PlanetScan.FAINT_MEMORY, card.memoryLine)
+    @Test fun `an empty remembered visit still prints zeros`() {
+        val card = PlanetScan.cardFor(planet(), known = true, memory = PlanetSocietyState())
+        assertEquals("再訪　敵対 0　好意 0", card.memoryLine)
     }
 
-    @Test fun `a planet without a story seed has no omen line`() {
-        val ctx = PlanetContext(PlanetTemperament.GENTLE, SacredThing.CHILDREN, PlanetStorySeed.NONE)
+    @Test fun `the card carries exactly three body lines`() {
+        val ctx = PlanetContext(PlanetTemperament.GENTLE, SacredThing.CHILDREN, PlanetStorySeed.LOST_CHILD)
         val card = PlanetScan.cardFor(planet(context = ctx), known = false, memory = PlanetSocietyState())
-        assertNull(card.omenLine)
-        assertEquals(3, card.lines.size) // trait + danger + memory (v2.43 adds the danger stars)
+        assertEquals(3, card.lines.size) // trait + danger + memory — no omen line any more
     }
 
     @Test fun `the card is composed from the lexicon and the biome name`() {
@@ -47,6 +43,5 @@ class PlanetScanTest {
         assertEquals(PlanetBiome.MAGMA.displayName, card.title)
         assertTrue(card.traitLine.contains(PlanetLexicon.temperament(PlanetTemperament.VENGEFUL)))
         assertTrue(card.traitLine.contains(PlanetLexicon.sacred(SacredThing.APEX)))
-        assertTrue(card.omenLine!!.contains(PlanetLexicon.omen(PlanetStorySeed.LOST_CHILD)!!))
     }
 }

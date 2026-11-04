@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/** v2.45: bounty heads pay their dust pile on death; kills tally toward the planet's request. */
+/** v2.45: bounty heads pay their exact dust pile on death, once, and the storm pays double. */
 class WorldBountyTest {
     private fun midbossDef() = GameConfig().enemies.values.first { it.tier == "midboss" && it.biome == null }
     private fun normalDef() = GameConfig().enemies.values.first { it.tier == "normal" && it.biome == null }
@@ -29,17 +29,6 @@ class WorldBountyTest {
         }
         assertEquals(1, exactPile, "the 77-dust bounty pile must drop once")
         assertTrue(gw.waveState.announce?.contains("賞金首") == true, "the HUD is told about the payout")
-    }
-
-    @Test fun `kills tally toward the planet's request`() {
-        val gw = WorldFactory.create(InputState(), seed = 3L)
-        val before = gw.worldState.questKills
-        val n = MobFactory.spawn(gw.world, normalDef(), 500f, 500f)
-        val m = MobFactory.spawn(gw.world, midbossDef(), 600f, 600f)
-        with(gw.world) { n[Health].hp = -1f; m[Health].hp = -1f }
-        gw.world.update(1f / 60f)
-        assertEquals(before + 2, gw.worldState.questKills, "both kills count")
-        assertEquals(1, gw.worldState.questElites, "only the midboss is an elite")
     }
 
     @Test fun `a storm wave doubles the dust a kill sheds`() {

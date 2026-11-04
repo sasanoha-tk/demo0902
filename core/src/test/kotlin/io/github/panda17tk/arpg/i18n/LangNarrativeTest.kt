@@ -1,50 +1,29 @@
 package io.github.panda17tk.arpg.i18n
 
-import io.github.panda17tk.arpg.planet.PlanetBiome
 import io.github.panda17tk.arpg.sim.Endgame
-import io.github.panda17tk.arpg.sim.MemoryCoreLog
 import io.github.panda17tk.arpg.sim.WaveEvent
 import io.github.panda17tk.arpg.sim.WaveEvents
-import io.github.panda17tk.arpg.sim.WreckLog
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/** v2.162 英語化第4弾(後半・その1): the story's spine — cores, wrecks, the ending, the banner. */
+/** v2.162/2.192: the functional spine in EN - banners, the numeric close, the toasts. */
 class LangNarrativeTest {
     private fun assertEnglish(s: String) {
         val t = Lang.tr(s)
         assertTrue(t.none { it.code >= 0x2E80 && it != '　' }, "still CJK: 「$s」 -> 「$t」")
     }
 
-    @Test fun `every memory core line speaks English at every depth`() {
+    @Test fun `the close reads in English, composed number lines included`() {
         Lang.en = true
         try {
-            val biomes: List<PlanetBiome?> = PlanetBiome.entries + null
-            for (system in 1..4) for (b in biomes) for (pid in 1L..30L) {
-                assertEnglish(MemoryCoreLog.lineFor(pid, b, system))
+            // v2.192: the ending is run numbers + a choice label, so the composed lines translate too
+            Endgame.pages(12, 76, 90, 1).flatten().forEach(::assertEnglish)
+            Endgame.epilogue(Endgame.CHOICE_DRIFT, 12, 76, 1).forEach(::assertEnglish)
+            for (c in listOf(Endgame.CHOICE_SLEEP, Endgame.CHOICE_DRIFT, Endgame.CHOICE_UNBIND, Endgame.CHOICE_RECKON)) {
+                assertEnglish(c)
+                assertEnglish("選択 $c") // the composed line the closing screen draws
             }
-        } finally { Lang.en = false }
-    }
-
-    @Test fun `every wreck broadcast speaks English`() {
-        Lang.en = true
-        try {
-            for (seed in 1L..20L) for (i in 0..3) assertEnglish(WreckLog.lineFor(seed, i))
-        } finally { Lang.en = false }
-    }
-
-    @Test fun `the whole ending reads in English`() {
-        Lang.en = true
-        try {
-            Endgame.PAGES.flatten().forEach(::assertEnglish)
-            Endgame.EPILOGUE.forEach(::assertEnglish)
-            Endgame.EPILOGUE_UNBIND.forEach(::assertEnglish) // v2.185 第3の結末
-            Endgame.EPILOGUE_RECKON.forEach(::assertEnglish) // v2.189 もう一つの結末
             assertEnglish(Endgame.DRIFT_LINE)
-            assertEnglish(Endgame.CHOICE_SLEEP)
-            assertEnglish(Endgame.CHOICE_DRIFT)
-            assertEnglish(Endgame.CHOICE_UNBIND)
-            assertEnglish(Endgame.CHOICE_RECKON)
             assertEnglish("タップで続ける")
             assertEnglish("タップで記録を閉じる")
         } finally { Lang.en = false }
@@ -59,7 +38,6 @@ class LangNarrativeTest {
             }
             assertEnglish("⚠ 強大な気配が近づく　大群が接近している") // the boss line joins the event line
             assertEnglish("強敵の気配")
-            assertEnglish("漂流者を救助した — 礼にと星屑40を分けてくれた")
         } finally { Lang.en = false }
     }
 }

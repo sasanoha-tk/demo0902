@@ -12,25 +12,25 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/** v2.138 公正な野生: the escort counts the keeper's own kills, and the timid majority keeps the old line. */
+/** v2.138 公正な野生: the field book counts the keeper's own kills, and the timid majority keeps the old line. */
 class EcologyFairnessTest {
     private val dt = 1f / 60f
 
-    @Test fun `the escort quest counts the keeper's kills - never the ecosystem's own`() {
+    @Test fun `the field book counts the keeper's kills - never the ecosystem's own`() {
         val gw = WorldFactory.create(InputState(), seed = 4L)
         val wolf = GameConfig().enemies.getValue("fang_wolf")
         val (px, py) = with(gw.world) { gw.player[Transform].let { it.x to it.y } }
-        val before = gw.worldState.questPredators
+        val before = gw.gameOver.killsByKind["fang_wolf"] ?: 0
 
         val hunted = MobFactory.spawn(gw.world, wolf, px + 400f, py)
         with(gw.world) { hunted[Mob].fellByWild = true; hunted[Health].hp = 0f } // an apex's kill
         gw.world.update(dt)
-        assertEquals(before, gw.worldState.questPredators, "the food web must not fulfil the escort")
+        assertEquals(before, gw.gameOver.killsByKind["fang_wolf"] ?: 0, "the food web's kill enters no field book")
 
         val mine = MobFactory.spawn(gw.world, wolf, px + 400f, py)
         with(gw.world) { mine[Health].hp = 0f } // the keeper's own kill
         gw.world.update(dt)
-        assertEquals(before + 1, gw.worldState.questPredators, "the keeper's kill counts")
+        assertEquals(before + 1, gw.gameOver.killsByKind["fang_wolf"] ?: 0, "the keeper's kill counts")
     }
 
     @Test fun `the timid majority keeps the old line - the brave few cross it`() {

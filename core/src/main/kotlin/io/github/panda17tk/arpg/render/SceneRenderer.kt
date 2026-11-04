@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import io.github.panda17tk.arpg.map.DecorKind
@@ -21,7 +20,6 @@ import io.github.panda17tk.arpg.ecs.components.Mob
 import io.github.panda17tk.arpg.ecs.components.MobAction
 import io.github.panda17tk.arpg.ecs.components.Pickup
 import io.github.panda17tk.arpg.ecs.components.Smoke
-import io.github.panda17tk.arpg.ecs.components.Speech
 import io.github.panda17tk.arpg.ecs.components.Transform
 import io.github.panda17tk.arpg.ecs.components.Velocity
 import io.github.panda17tk.arpg.ecs.world.GameWorld
@@ -31,7 +29,6 @@ import io.github.panda17tk.arpg.planet.PlanetBiome
 import io.github.panda17tk.arpg.sim.FacilityKind
 import io.github.panda17tk.arpg.sim.Tuning
 import io.github.panda17tk.arpg.sim.WorldMode
-import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -48,17 +45,13 @@ class PlayerPose(
 
 /**
  * World-space scene drawing — terrain, drift field, facilities, actors, projectiles, FX, planets,
- * bases, telegraph rings, melee slashes and speech bubbles (spec §5.1: GameScreen keeps state +
- * wiring; painting lives here). Three passes in draw() mirror the GPU state changes: one Filled
- * shape batch, one Line shape batch, then the text batch for speech. All coordinates are world
+ * bases, telegraph rings and melee slashes (spec §5.1: GameScreen keeps state +
+ * wiring; painting lives here). Two passes in draw() mirror the GPU state changes: one Filled
+ * shape batch and one Line shape batch. All coordinates are world
  * units (y-down camera).
  */
 class SceneRenderer {
-    /** v2.170 文字の消灯: the creatures' bubbles obey 世界観ヒント (GameScreen mirrors the toggle). */
-    var speechEnabled = true
 
-    private val glyphLayout = GlyphLayout()
-    private val activeSpeakers = ArrayList<com.github.quillraven.fleks.Entity>(16) // v2.149: reused per frame
     private val tmpC = Color()
     // v2.139 描画の倹約: per-def caches so the mob pass allocates nothing per frame
     private val mobColorCache = HashMap<String, Color>()
@@ -113,7 +106,6 @@ class SceneRenderer {
         shapes.projectionMatrix = camera.combined
         drawFilledPass(shapes, camera, gw, animTime, pose)
         drawLinePass(shapes, camera, gw, animTime)
-        drawSpeechBubbles(shapes, batch, font, camera, gw)
     }
 
     private var memoryTones: Map<Long, Int> = emptyMap()
@@ -144,7 +136,6 @@ class SceneRenderer {
         if (chompP > 0f) drawChomp(shapes, plX, plY, gw.fx.chompDx, gw.fx.chompDy, 1f - chompP)
         drawProjectiles(shapes, gw, animTime)
         drawMeteors(shapes, gw)  // v2.87 流星群
-        drawPillars(shapes, gw)  // v2.87 依頼の答え
         drawFx(shapes, gw)
         drawPickups(shapes, gw, animTime)
         drawSmoke(shapes, gw)
@@ -487,17 +478,6 @@ class SceneRenderer {
         }
     }
 
-    /** v2.87 quest celebration: the star's answer — a column of light fading over the keeper. */
-    private fun drawPillars(shapes: ShapeRenderer, gw: GameWorld) {
-        gw.fx.pillars.forEach { pl ->
-            val k = (1f - pl.t / pl.life).coerceIn(0f, 1f)
-            tmpC.set(1f, 0.90f, 0.60f, 0.28f * k); shapes.color = tmpC
-            shapes.rect(pl.x - 9f, pl.y - 190f, 18f, 190f)
-            tmpC.set(1f, 0.97f, 0.85f, 0.55f * k); shapes.color = tmpC
-            shapes.rect(pl.x - 3.5f, pl.y - 190f, 7f, 190f)
-        }
-    }
-
     /** Death-burst particles (gibs shrink as they expire), dash afterimages and beam flashes. */
     private fun drawFx(shapes: ShapeRenderer, gw: GameWorld) {
         gw.fx.corpses.forEach { c -> // v2.85: the body squashes flat and pales before it bursts
@@ -596,7 +576,7 @@ class SceneRenderer {
         }
     }
 
-    /** Equipment/consumable/lore drops: a silhouette by catalog kind, purple-accented so spoils pop. */
+    /** Drops by catalog kind: a silhouette tells equipment from consumable from 資料品. */
     private fun drawItemGlyph(shapes: ShapeRenderer, id: String, x: Float, y: Float) {
         when (ItemCatalog.byId(id)?.kind) {
             ItemKind.RANGED_WEAPON -> { // a small gun: body + barrel
@@ -626,7 +606,7 @@ class SceneRenderer {
                 shapes.color = cPickupCase; shapes.circle(x - 2.2f, y, 2.6f, 8); shapes.rect(x - 2.2f, y - 2.6f, 2.2f, 5.2f)
                 shapes.color = cItem; shapes.circle(x + 2.2f, y, 2.6f, 8); shapes.rect(x, y - 2.6f, 2.2f, 5.2f)
             }
-            ItemKind.LORE -> { // a readable: a small book with a pale page edge
+            ItemKind.LORE -> { // 資料品: the small-book silhouette (drop marker, nothing to read)
                 shapes.color = cItem; shapes.rect(x - 4f, y - 5f, 8f, 10f)
                 shapes.color = cPickupCase; shapes.rect(x - 2.6f, y - 3.8f, 5.6f, 7.6f)
                 shapes.color = cItem; shapes.rect(x - 4f, y - 5f, 1.6f, 10f) // spine
@@ -918,63 +898,6 @@ class SceneRenderer {
             shapes.line(sl.x + cos(a1) * (rBase - 6f), sl.y + sin(a1) * (rBase - 6f), sl.x + cos(a1) * (rBase + 9f), sl.y + sin(a1) * (rBase + 9f))
         }
         shapes.end()
-    }
-
-    /** Speech bubbles — translucent plate + short line above creatures (y-down → negative scaleY flips glyphs upright). */
-    private fun drawSpeechBubbles(
-        shapes: ShapeRenderer, batch: SpriteBatch, font: BitmapFont,
-        camera: OrthographicCamera, gw: GameWorld,
-    ) {
-        val bubScaleX = font.data.scaleX; val bubScaleY = font.data.scaleY
-        font.data.setScale(0.2f, -0.2f) // small world-unit text; tune on device
-        val speakers = gw.world.family { all(Mob, Transform, Speech) }
-        // v2.149: collect the few live, on-screen speakers ONCE — the two draw passes used to
-        // walk all ~5000 silent fish twice per frame.
-        activeSpeakers.clear()
-        if (speechEnabled) run { // v2.170: no bubbles when the world's asides are off
-            val scx = camera.position.x; val scy = camera.position.y
-            val shw = camera.viewportWidth / 2f + CULL_MARGIN
-            val shh = camera.viewportHeight / 2f + CULL_MARGIN
-            with(gw.world) {
-                speakers.forEach { e ->
-                    val sp = e[Speech]
-                    if (sp.remaining <= 0f || sp.text.isEmpty()) return@forEach
-                    val mt = e[Transform]
-                    if (mt.x < scx - shw || mt.x > scx + shw || mt.y < scy - shh || mt.y > scy + shh) return@forEach
-                    activeSpeakers.add(e)
-                }
-            }
-        }
-        // backing plates first (shapes) so short lines stay legible against the starfield / terrain
-        shapes.projectionMatrix = camera.combined
-        shapes.begin(ShapeRenderer.ShapeType.Filled)
-        with(gw.world) {
-            activeSpeakers.forEach { e ->
-                val sp = e[Speech]
-                val mt = e[Transform]
-                glyphLayout.setText(font, io.github.panda17tk.arpg.i18n.Lang.tr(sp.text)) // v2.142 英語化第3弾
-                val lw = glyphLayout.width; val lh = abs(glyphLayout.height)
-                tmpC.set(0f, 0f, 0f, 0.5f); shapes.color = tmpC
-                shapes.rect(mt.x - lw / 2f - 4f, mt.y - 20f - lh - 2f, lw + 8f, lh * 2f + 6f)
-            }
-        }
-        shapes.end()
-        // then the lines themselves (batch)
-        batch.projectionMatrix = camera.combined
-        batch.begin()
-        with(gw.world) {
-            activeSpeakers.forEach { e ->
-                val sp = e[Speech]
-                val mt = e[Transform]
-                glyphLayout.setText(font, io.github.panda17tk.arpg.i18n.Lang.tr(sp.text)) // v2.142 英語化第3弾
-                font.draw(batch, glyphLayout, mt.x - glyphLayout.width / 2f, mt.y - 20f)
-            }
-        }
-        // v2.170 文字の消灯: the damage numbers retired — hit-stop, sparks, squash and the
-        // kill flash carry the feedback now (v2.85's pops still age in Fx; they just don't paint).
-        font.color = Color.WHITE
-        font.data.setScale(bubScaleX, bubScaleY)
-        batch.end()
     }
 
     private fun pickupColor(kind: String): Color = when (kind) {

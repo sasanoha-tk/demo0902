@@ -39,7 +39,7 @@ class WorldTraderTest {
             assertEquals(TraderGoodKind.AMMO, stock[1].kind)
             assertEquals(TraderGoodKind.GEAR, stock[2].kind)
             val gear = stock[2].item
-            assertTrue(gear != null && gear.kind != ItemKind.LORE, "stories are found, not sold")
+            assertTrue(gear != null && gear.kind != ItemKind.LORE, "lore stays out of the shelves")
             assertTrue(stock.all { it.price >= 1 }, "everything costs something")
             stock.getOrNull(3)?.let { shard ->
                 assertEquals(TraderGoodKind.SHARD, shard.kind)
@@ -51,14 +51,15 @@ class WorldTraderTest {
         assertTrue(withShard in 1..39, "got $withShard/40 shard shelves")
     }
 
-    @Test fun `buyback halves the market price, floors at 1, and never trades stories`() {
+    @Test fun `buyback halves the market price, floors at 1, and covers every kind`() {
         // v2.114 買い取り
         val gear = io.github.panda17tk.arpg.item.ItemCatalog.ALL.first { it.kind != io.github.panda17tk.arpg.item.ItemKind.LORE }
         assertEquals(io.github.panda17tk.arpg.item.Market.priceFor(gear, 0f) / 2, Trader.sellPrice(gear))
         assertTrue(Trader.sellPrice(gear) >= 1)
+        // v2.192: 資料品 sells like anything else — it is no longer readable
         val lore = io.github.panda17tk.arpg.item.ItemCatalog.ALL.first { it.kind == io.github.panda17tk.arpg.item.ItemKind.LORE }
-        assertTrue(!Trader.sellable(lore), "stories are found, not traded")
-        assertTrue(Trader.sellable(gear))
+        assertEquals(io.github.panda17tk.arpg.item.Market.priceFor(lore, 0f) / 2, Trader.sellPrice(lore))
+        assertTrue(Trader.sellPrice(lore) >= 1, "資料品 is worth at least 1屑")
     }
 
     @Test fun `the buyback page's plates and footer stay on screen without overlap`() {

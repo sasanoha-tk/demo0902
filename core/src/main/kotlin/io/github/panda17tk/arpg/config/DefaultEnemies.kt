@@ -47,7 +47,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "spitter" to EnemyDef(
         name = "スピッター", tier = "normal", color = "#3aa06f", hp = 65f, speed = 35f,
         seeRange = 320f, contactKB = 220f,
-        bravery = 0.25f, canBeg = true, mercyThreshold = 0.3f, canSpeak = true, lifeKind = LifeKind.SAPIENT, // timid — flees, begs, pleads aloud
+        bravery = 0.25f, canBeg = true, mercyThreshold = 0.3f, lifeKind = LifeKind.SAPIENT, // timid — flees, begs
         attacks = listOf(
             AttackSpec("melee", cd = 3.0f, dmg = 10f, range = 9f, arc = 90f),
             AttackSpec("shot", cd = 1.2f, dmg = 12f, speed = 220f, life = 1.6f),
@@ -56,7 +56,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "stalker" to EnemyDef(
         name = "ストーカー", tier = "normal", color = "#9a6ad0", hp = 60f, speed = 64f,
         seeRange = 340f, contactKB = 200f, gravityResponse = 0f, // agile — ignores gravity, closes straight in
-        intelligence = 0.8f, bravery = 0.3f, canHideAndRest = true, canSpeak = true, lifeKind = LifeKind.SAPIENT, // cunning — hides, rests, taunts
+        intelligence = 0.8f, bravery = 0.3f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT, // cunning — hides, rests
         dodge = DodgeSpec(0.18f, 0.15f, 2.0f),
         attacks = listOf(
             AttackSpec("blink", cd = 3.0f, maxTiles = 5, dur = 0.1f, minDist = 70f, standoff = 28f),
@@ -75,7 +75,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "mortar_bug" to EnemyDef(
         name = "モーター蟲", tier = "normal", color = "#6a8f3a", hp = 45f, speed = 26f,
         w = 18f, h = 22f, seeRange = 420f, contactKB = 180f, // squat lobber, hangs far back
-        bravery = 0.15f, canBeg = true, mercyThreshold = 0.4f, canSpeak = true, lifeKind = LifeKind.SAPIENT, // a coward with a cannon
+        bravery = 0.15f, canBeg = true, mercyThreshold = 0.4f, lifeKind = LifeKind.SAPIENT, // a coward with a cannon
         attacks = listOf(
             AttackSpec("shot", cd = 2.6f, dmg = 22f, speed = 150f, life = 3.2f), // slow, heavy shells
         ),
@@ -83,7 +83,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "shield_bearer" to EnemyDef(
         name = "盾持ち", tier = "normal", color = "#5a7a9a", hp = 130f, speed = 34f,
         w = 28f, h = 28f, seeRange = 260f, contactKB = 340f, // a walking wall
-        bravery = 0.85f, protectiveness = 0.9f, intelligence = 0.5f, canSpeak = true, lifeKind = LifeKind.SAPIENT, // stands its ground, shields the line
+        bravery = 0.85f, protectiveness = 0.9f, intelligence = 0.5f, lifeKind = LifeKind.SAPIENT, // stands its ground, shields the line
         attacks = listOf(
             AttackSpec("guard", cd = 6.0f, duration = 2.5f, mul = 0.3f),
             AttackSpec("slam", cd = 3.5f, dmg = 14f, range = 60f, power = 320f),
@@ -100,7 +100,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "marksman" to EnemyDef(
         name = "マークスマン", tier = "normal", color = "#8fa0b8", hp = 40f, speed = 46f,
         w = 14f, h = 24f, seeRange = 560f, contactKB = 200f, // tall, thin, sees further than anything
-        intelligence = 0.9f, bravery = 0.25f, canHideAndRest = true, canSpeak = true, lifeKind = LifeKind.SAPIENT, // patient — hides, waits, lines up the shot
+        intelligence = 0.9f, bravery = 0.25f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT, // patient — hides, waits, lines up the shot
         dodge = DodgeSpec(0.12f, 0.2f, 2.5f),
         attacks = listOf(
             AttackSpec("shot", cd = 3.0f, dmg = 30f, speed = 420f, life = 2.0f), // one sharp crack
@@ -109,7 +109,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "sapper" to EnemyDef(
         name = "サッパー", tier = "normal", color = "#b06a9a", hp = 55f, speed = 58f,
         w = 16f, h = 16f, seeRange = 320f, contactKB = 220f,
-        intelligence = 0.7f, bravery = 0.45f, canSpeak = true, lifeKind = LifeKind.SAPIENT, // an engineer: seeds the field and withdraws
+        intelligence = 0.7f, bravery = 0.45f, lifeKind = LifeKind.SAPIENT, // an engineer: seeds the field and withdraws
         attacks = listOf(
             AttackSpec("mine", cd = 3.5f, dmg = 20f, life = 9f),
             AttackSpec("melee", cd = 1.4f, dmg = 8f, range = 10f, arc = 180f),
@@ -127,7 +127,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "sprayer" to EnemyDef(
         name = "スプレイヤー", tier = "normal", color = "#7aa06a", hp = 50f, speed = 40f,
         w = 17f, h = 15f, seeRange = 340f, contactKB = 200f,
-        bravery = 0.5f, intelligence = 0.3f, canSpeak = true, lifeKind = LifeKind.SAPIENT, // sprays first, thinks later
+        bravery = 0.5f, intelligence = 0.3f, lifeKind = LifeKind.SAPIENT, // sprays first, thinks later
         attacks = listOf(
             AttackSpec("spray", cd = 2.2f, dmg = 6f, count = 6, spread = 70f, speed = 210f, life = 1.4f),
         ),
@@ -135,7 +135,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "duelist" to EnemyDef(
         name = "デュエリスト", tier = "normal", color = "#d08ab8", hp = 55f, speed = 70f,
         w = 14f, h = 20f, seeRange = 360f, contactKB = 220f,
-        intelligence = 0.75f, bravery = 0.7f, canSpeak = true, lifeKind = LifeKind.SAPIENT, // proud — trades volleys, dodges yours
+        intelligence = 0.75f, bravery = 0.7f, lifeKind = LifeKind.SAPIENT, // proud — trades volleys, dodges yours
         dodge = DodgeSpec(0.30f, 0.18f, 1.8f),
         attacks = listOf(
             AttackSpec("twin_shot", cd = 1.6f, dmg = 9f, speed = 260f, life = 1.8f),
@@ -145,7 +145,7 @@ private fun spaceEnemies(): Map<String, EnemyDef> = mapOf(
     "warden" to EnemyDef(
         name = "ウォーデン", tier = "normal", color = "#6a9a8a", hp = 110f, speed = 40f,
         w = 26f, h = 26f, seeRange = 280f, contactKB = 300f,
-        bravery = 0.8f, protectiveness = 0.8f, intelligence = 0.55f, canSpeak = true, lifeKind = LifeKind.SAPIENT, // holds the door
+        bravery = 0.8f, protectiveness = 0.8f, intelligence = 0.55f, lifeKind = LifeKind.SAPIENT, // holds the door
         attacks = listOf(
             AttackSpec("shockwave", cd = 3.0f, dmg = 6f, range = 70f, power = 520f),
             AttackSpec("melee", cd = 1.2f, dmg = 10f, range = 14f, arc = 360f),
@@ -212,7 +212,7 @@ private fun spaceBosses(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "overlord" to EnemyDef(
-        name = "オーバーロード(ボス)", lore = "同期の綻びが結んだ王。命じる相手は、もういない", tier = "boss", color = "#d04a6a", hp = 1200f, speed = 52f,
+        name = "オーバーロード(ボス)", tier = "boss", color = "#d04a6a", hp = 1200f, speed = 52f,
         w = 46f, h = 46f, seeRange = 480f, contactKB = 360f, gravityResponse = 0.25f, // boss resists being flung
         intelligence = 0.9f, bravery = 1f, // v2.42: the throne earns its smarts
         dodge = DodgeSpec(0.12f, 0.12f, 2.5f),
@@ -287,16 +287,16 @@ private fun natureSociety(): Map<String, EnemyDef> = mapOf(
     "spore_shaman" to EnemyDef(
         name = "胞子の祈祷師", tier = "normal", color = "#6fae8f", hp = 70f, speed = 44f,
         seeRange = 360f, contactKB = 200f, gravityResponse = 0.9f,
-        intelligence = 0.85f, bravery = 0.35f, canHideAndRest = true, canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.NATURE,
+        intelligence = 0.85f, bravery = 0.35f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.NATURE,
         attacks = listOf(
             AttackSpec("shot", cd = 1.1f, dmg = 11f, speed = 220f, life = 1.6f),
             AttackSpec("heal", cd = 9.0f, amount = 30f),
         ),
     ),
     "beast_king" to EnemyDef(
-        name = "獣王", lore = "森は主と眠り、主と目覚める。子を害す者を忘れない", tier = "midboss", color = "#2f6f2a", hp = 480f, speed = 54f, w = 36f, h = 36f,
+        name = "獣王", tier = "midboss", color = "#2f6f2a", hp = 480f, speed = 54f, w = 36f, h = 36f,
         seeRange = 360f, contactKB = 360f, gravityResponse = 0.6f,
-        protectiveness = 0.7f, canSpeak = true, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.NATURE,
+        protectiveness = 0.7f, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.NATURE,
         attacks = listOf(
             AttackSpec("melee", cd = 0.8f, dmg = 18f, range = 26f, arc = 360f),
             AttackSpec("summon", cd = 8.0f, minion = "young_beast", count = 3),
@@ -336,9 +336,9 @@ private fun magmaSociety(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "volcano_king" to EnemyDef(
-        name = "火山王", lore = "熔けた玉座に座す王。怒りは山肌そのもの", tier = "midboss", color = "#a83218", hp = 540f, speed = 50f, w = 38f, h = 38f,
+        name = "火山王", tier = "midboss", color = "#a83218", hp = 540f, speed = 50f, w = 38f, h = 38f,
         seeRange = 380f, contactKB = 360f, gravityResponse = 0.6f,
-        protectiveness = 0.7f, canSpeak = true, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.MAGMA,
+        protectiveness = 0.7f, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.MAGMA,
         attacks = listOf(
             AttackSpec("melee", cd = 0.8f, dmg = 20f, range = 28f, arc = 360f),
             AttackSpec("nova", cd = 5.0f, dmg = 10f, count = 16, speed = 200f),
@@ -353,7 +353,7 @@ private fun iceSociety(): Map<String, EnemyDef> = mapOf(
     "frostling" to EnemyDef(
         name = "氷の小妖", tier = "normal", color = "#bfe6f0", hp = 28f, speed = 86f,
         seeRange = 260f, contactKB = 160f, gravityResponse = 0.8f,
-        bravery = 0.15f, canBeg = true, mercyThreshold = 0.3f, canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.ICE, // timid — flees and pleads
+        bravery = 0.15f, canBeg = true, mercyThreshold = 0.3f, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.ICE, // timid — flees and pleads
         attacks = listOf(
             AttackSpec("lunge", cd = 3.2f, range = 70f, power = 280f),
             AttackSpec("melee", cd = 1.0f, dmg = 8f, range = 12f, arc = 360f),
@@ -370,7 +370,7 @@ private fun iceSociety(): Map<String, EnemyDef> = mapOf(
     "snow_stalker" to EnemyDef(
         name = "雪の追跡者", tier = "normal", color = "#9ad0e6", hp = 64f, speed = 66f,
         seeRange = 340f, contactKB = 200f, gravityResponse = 0f,
-        intelligence = 0.85f, bravery = 0.3f, canHideAndRest = true, canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.ICE,
+        intelligence = 0.85f, bravery = 0.3f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.ICE,
         dodge = DodgeSpec(0.18f, 0.15f, 2.0f),
         attacks = listOf(
             AttackSpec("blink", cd = 3.0f, maxTiles = 5, dur = 0.1f, minDist = 70f, standoff = 28f),
@@ -378,9 +378,9 @@ private fun iceSociety(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "ice_queen" to EnemyDef(
-        name = "氷の女王", lore = "凍てつく静寂を統べる。触れた者から時が止まる", tier = "midboss", color = "#5fa6d8", hp = 500f, speed = 48f, w = 36f, h = 36f,
+        name = "氷の女王", tier = "midboss", color = "#5fa6d8", hp = 500f, speed = 48f, w = 36f, h = 36f,
         seeRange = 380f, contactKB = 340f, gravityResponse = 0.6f,
-        protectiveness = 0.7f, canSpeak = true, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.ICE,
+        protectiveness = 0.7f, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.ICE,
         attacks = listOf(
             AttackSpec("nova", cd = 4.6f, dmg = 9f, count = 18, speed = 190f),
             AttackSpec("summon", cd = 8.0f, minion = "frostling", count = 3),
@@ -413,7 +413,7 @@ private fun gasSociety(): Map<String, EnemyDef> = mapOf(
     "gravity_wraith" to EnemyDef(
         name = "重力の亡霊", tier = "normal", color = "#b0a0e8", hp = 70f, speed = 60f,
         seeRange = 360f, contactKB = 200f, gravityResponse = 0f,
-        intelligence = 0.8f, bravery = 0.3f, canHideAndRest = true, canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.GAS,
+        intelligence = 0.8f, bravery = 0.3f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.GAS,
         dodge = DodgeSpec(0.2f, 0.15f, 1.8f),
         attacks = listOf(
             AttackSpec("blink", cd = 3.2f, maxTiles = 6, dur = 0.1f, minDist = 80f, standoff = 60f),
@@ -421,9 +421,9 @@ private fun gasSociety(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "storm_core" to EnemyDef(
-        name = "嵐の核(ボス)", lore = "形なき嵐の芯。風は言葉を持たぬまま荒ぶ", tier = "boss", color = "#7a78d8", hp = 1080f, speed = 40f, w = 44f, h = 44f,
+        name = "嵐の核(ボス)", tier = "boss", color = "#7a78d8", hp = 1080f, speed = 40f, w = 44f, h = 44f,
         seeRange = 460f, contactKB = 320f, gravityResponse = 0f, // the eye of the storm — unmoved by gravity
-        canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.GAS,
+        lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.GAS,
         attacks = listOf(
             AttackSpec("nova", cd = 4.0f, dmg = 10f, count = 20, speed = 200f),
             AttackSpec("barrage", cd = 3.0f, dmg = 9f, count = 9, spread = 90f, speed = 200f),
@@ -457,7 +457,7 @@ private fun deadSociety(): Map<String, EnemyDef> = mapOf(
     "dead_oracle" to EnemyDef(
         name = "死の託宣者", tier = "midboss", color = "#8c86b0", hp = 320f, speed = 44f, w = 32f, h = 32f,
         seeRange = 400f, contactKB = 220f, gravityResponse = 0.7f,
-        intelligence = 0.7f, bravery = 0.6f, canHideAndRest = true, canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.DEAD,
+        intelligence = 0.7f, bravery = 0.6f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.DEAD,
         attacks = listOf(
             AttackSpec("shot", cd = 1.1f, dmg = 12f, speed = 220f, life = 1.8f),
             AttackSpec("nova", cd = 5.5f, dmg = 9f, count = 14, speed = 180f),
@@ -471,7 +471,7 @@ private fun lonelyEncounters(): Map<String, EnemyDef> = mapOf(
     "lost_soldier" to EnemyDef(
         name = "はぐれ兵", tier = "midboss", color = "#b9a06a", hp = 180f, speed = 60f, w = 26f, h = 26f,
         seeRange = 360f, contactKB = 240f, gravityResponse = 1.0f,
-        intelligence = 0.55f, bravery = 0.3f, canBeg = true, mercyThreshold = 0.4f, canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.LONELY,
+        intelligence = 0.55f, bravery = 0.3f, canBeg = true, mercyThreshold = 0.4f, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.LONELY,
         attacks = listOf(
             AttackSpec("shot", cd = 1.2f, dmg = 12f, speed = 230f, life = 1.7f),
             AttackSpec("charge_melee", cd = 2.8f, range = 50f, reach = 34f, windup = 0.7f, dmg = 18f, kb = 340f),
@@ -479,9 +479,9 @@ private fun lonelyEncounters(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "exiled_king" to EnemyDef(
-        name = "追放王(ボス)", lore = "王座を追われ、なお冠を捨てられぬ亡霊", tier = "boss", color = "#c8a23a", hp = 760f, speed = 54f, w = 42f, h = 42f,
+        name = "追放王(ボス)", tier = "boss", color = "#c8a23a", hp = 760f, speed = 54f, w = 42f, h = 42f,
         seeRange = 440f, contactKB = 380f, gravityResponse = 0.4f,
-        bravery = 1f, protectiveness = 0.4f, canSpeak = true, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.LONELY,
+        bravery = 1f, protectiveness = 0.4f, lifeKind = LifeKind.SAPIENT, familyRole = FamilyRole.KING, biome = PlanetBiome.LONELY,
         attacks = listOf(
             AttackSpec("melee", cd = 0.7f, dmg = 22f, range = 30f, arc = 360f),
             AttackSpec("charge", cd = 4.5f, range = 260f, power = 680f),
@@ -490,9 +490,9 @@ private fun lonelyEncounters(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "star_monk" to EnemyDef(
-        name = "星の修道士", lore = "生涯に三度だけ言葉を紡ぐ。三度目は、よそ者への警告", tier = "normal", color = "#d8d0a0", hp = 90f, speed = 72f,
+        name = "星の修道士", tier = "normal", color = "#d8d0a0", hp = 90f, speed = 72f,
         seeRange = 320f, contactKB = 160f, gravityResponse = 0.6f,
-        intelligence = 0.6f, bravery = 0.1f, canSpeak = true, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.LONELY, // peaceful — flees if attacked
+        intelligence = 0.6f, bravery = 0.1f, lifeKind = LifeKind.SAPIENT, biome = PlanetBiome.LONELY, // peaceful — flees if attacked
     ),
 )
 
@@ -542,7 +542,7 @@ private fun natureWildlife(): Map<String, EnemyDef> = mapOf(
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.HATCHLING, diet = Diet.OMNIVORE, herdAffinity = 0.7f, fear = 1.0f, biome = PlanetBiome.NATURE,
     ),
     "forest_apex" to EnemyDef(
-        name = "森の主", lore = "岩のように大きく、眼は静か。撃てば星ごと敵に回る", tier = "normal", color = "#3f6f3a", hp = 300f, speed = 74f, w = 34f, h = 30f,
+        name = "森の主", tier = "normal", color = "#3f6f3a", hp = 300f, speed = 74f, w = 34f, h = 30f,
         seeRange = 400f, contactKB = 340f, gravityResponse = 0.7f,
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.APEX, diet = Diet.CARNIVORE, herdAffinity = 0.1f, fear = 0.05f, territoryRadius = 240f, biome = PlanetBiome.NATURE,
         attacks = listOf(
@@ -622,7 +622,7 @@ private fun iceWildlife(): Map<String, EnemyDef> = mapOf(
         bravery = 0.8f, // v2.138 公正な野生: the pale hunter crosses the line
     ),
     "frost_worm" to EnemyDef(
-        name = "霜の大蟲", lore = "氷の下をゆく白い蟲。氷の民は畏れ、子守唄に編んだ", tier = "normal", color = "#9fc4d8", hp = 320f, speed = 64f, w = 34f, h = 30f,
+        name = "霜の大蟲", tier = "normal", color = "#9fc4d8", hp = 320f, speed = 64f, w = 34f, h = 30f,
         seeRange = 400f, contactKB = 340f, gravityResponse = 0.7f,
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.APEX, diet = Diet.CARNIVORE, herdAffinity = 0.1f, fear = 0.05f, territoryRadius = 240f, biome = PlanetBiome.ICE,
         attacks = listOf(
@@ -712,7 +712,7 @@ private fun lonelyWildlife(): Map<String, EnemyDef> = mapOf(
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.PREY, diet = Diet.NONE, herdAffinity = 0f, fear = 0.4f, biome = PlanetBiome.LONELY,
     ),
     "last_beast" to EnemyDef(
-        name = "最後の獣", lore = "歌の絶えた星に、ただ一匹だけ残った獣", tier = "normal", color = "#544f5c", hp = 300f, speed = 66f, w = 34f, h = 30f,
+        name = "最後の獣", tier = "normal", color = "#544f5c", hp = 300f, speed = 66f, w = 34f, h = 30f,
         seeRange = 380f, contactKB = 320f, gravityResponse = 0.7f,
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.APEX, diet = Diet.CARNIVORE, herdAffinity = 0f, fear = 0.1f, territoryRadius = 220f, biome = PlanetBiome.LONELY,
         attacks = listOf(
@@ -757,7 +757,7 @@ private fun expansionSpace(): Map<String, EnemyDef> = mapOf(
     "null_hound" to EnemyDef(
         name = "虚数の猟犬", tier = "normal", color = "#4d4a66", hp = 58f, speed = 112f, w = 22f, h = 16f,
         seeRange = 380f, contactKB = 220f, gravityResponse = 0.6f,
-        intelligence = 0.4f, canSpeak = true, speechStyle = "savage", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.4f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("lunge", cd = 2.8f, range = 110f, power = 420f),
             AttackSpec("melee", cd = 0.8f, dmg = 12f, range = 14f, arc = 180f),
@@ -766,7 +766,7 @@ private fun expansionSpace(): Map<String, EnemyDef> = mapOf(
     "patch_crab" to EnemyDef(
         name = "修繕蟹", tier = "normal", color = "#7a9a8a", hp = 90f, speed = 46f, w = 24f, h = 18f,
         seeRange = 280f, contactKB = 240f, gravityResponse = 1.0f,
-        intelligence = 0.7f, bravery = 0.6f, canSpeak = true, speechStyle = "mechanical", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.7f, bravery = 0.6f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("guard", cd = 6f, duration = 1.6f, mul = 0.4f),
             AttackSpec("melee", cd = 1.1f, dmg = 13f, range = 16f, arc = 120f),
@@ -805,7 +805,7 @@ private fun expansionSpace(): Map<String, EnemyDef> = mapOf(
         name = "計数員", tier = "normal", color = "#8a94a8", hp = 64f, speed = 54f, w = 20f, h = 22f,
         seeRange = 360f, contactKB = 180f, gravityResponse = 0.9f,
         intelligence = 0.9f, bravery = 0.3f, canBeg = true, mercyThreshold = 0.35f,
-        canSpeak = true, speechStyle = "mechanical", lifeKind = LifeKind.SAPIENT,
+        lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("shot", cd = 1.4f, dmg = 11f, speed = 240f, life = 1.6f),
             AttackSpec("guard", cd = 7f, duration = 1.2f, mul = 0.5f),
@@ -814,7 +814,7 @@ private fun expansionSpace(): Map<String, EnemyDef> = mapOf(
     "grief_shell" to EnemyDef(
         name = "悼みの殻", tier = "normal", color = "#6f7a8e", hp = 110f, speed = 32f, w = 26f, h = 26f,
         seeRange = 300f, contactKB = 260f, gravityResponse = 1.1f,
-        intelligence = 0.6f, bravery = 0.8f, canSpeak = true, speechStyle = "archaic", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.6f, bravery = 0.8f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("burst", cd = 2.8f, dmg = 10f, count = 4, speed = 200f, spread = 0.4f)),
     ),
     "vector_imp" to EnemyDef(
@@ -826,7 +826,7 @@ private fun expansionSpace(): Map<String, EnemyDef> = mapOf(
     "archivist" to EnemyDef(
         name = "書庫長", tier = "midboss", color = "#a89a72", hp = 620f, speed = 40f, w = 34f, h = 38f,
         seeRange = 460f, contactKB = 300f, gravityResponse = 0.8f,
-        intelligence = 0.9f, canSpeak = true, speechStyle = "mechanical", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.9f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("summon", cd = 7f, count = 3, minion = "archive_moth"),
             AttackSpec("barrage", cd = 4.2f, dmg = 10f, count = 7, speed = 210f, spread = 0.9f),
@@ -845,7 +845,7 @@ private fun expansionSpace(): Map<String, EnemyDef> = mapOf(
     "hollow_knight" to EnemyDef(
         name = "空洞の騎士", tier = "midboss", color = "#7a7f96", hp = 640f, speed = 58f, w = 30f, h = 36f,
         seeRange = 440f, contactKB = 320f, gravityResponse = 1.0f,
-        intelligence = 0.7f, canSpeak = true, speechStyle = "archaic", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.7f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("charge_melee", cd = 3.0f, range = 120f, reach = 44f, windup = 0.7f, dmg = 24f, kb = 480f),
             AttackSpec("guard", cd = 8f, duration = 2f, mul = 0.35f),
@@ -874,7 +874,7 @@ private fun expansionSpace(): Map<String, EnemyDef> = mapOf(
     "lantern_bearer" to EnemyDef(
         name = "提灯持ち", tier = "midboss", color = "#d0b04a", hp = 580f, speed = 50f, w = 28f, h = 34f,
         seeRange = 460f, contactKB = 280f, gravityResponse = 0.6f,
-        intelligence = 0.8f, canSpeak = true, speechStyle = "polite", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.8f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("homing", cd = 3.2f, dmg = 13f, speed = 140f, turn = 2.8f, life = 3.5f),
             AttackSpec("mine", cd = 5f, dmg = 18f, life = 8f),
@@ -887,9 +887,9 @@ private fun rogueDrifter(): Map<String, EnemyDef> = mapOf(
     "rogue_drifter" to EnemyDef(
         // tier "rogue": kept OUT of the surge pool / drifter rolls / wreck pickets — it only
         // ever enters the world through its own two-per-system spawn, under the ROGUE banner.
-        name = "ならず者の漂流者", lore = "ただ漂う者ほど不気味なものはない。撃つ前に灯を一度またたけ", tier = "rogue", color = "#d8e2ec", hp = 280f, speed = 98f, w = 24f, h = 24f,
+        name = "ならず者の漂流者", tier = "rogue", color = "#d8e2ec", hp = 280f, speed = 98f, w = 24f, h = 24f,
         seeRange = 460f, contactKB = 240f, gravityResponse = 0.5f,
-        intelligence = 0.9f, bravery = 0.9f, canSpeak = true, speechStyle = "savage", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.9f, bravery = 0.9f, lifeKind = LifeKind.SAPIENT,
         dodge = DodgeSpec(0.22f, 0.13f, 1.8f),
         attacks = listOf(
             AttackSpec("twin_shot", cd = 0.9f, dmg = 12f, speed = 290f, life = 1.8f),
@@ -905,19 +905,19 @@ private fun expansionSociety(): Map<String, EnemyDef> = mapOf(
     "thorn_sentinel" to EnemyDef(
         name = "茨の哨兵", tier = "normal", color = "#4a7a3a", hp = 96f, speed = 66f, w = 24f, h = 26f,
         seeRange = 340f, contactKB = 260f, biome = PlanetBiome.NATURE,
-        intelligence = 0.5f, bravery = 0.9f, protectiveness = 0.8f, canSpeak = true, speechStyle = "savage", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.5f, bravery = 0.9f, protectiveness = 0.8f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("melee", cd = 1.0f, dmg = 15f, range = 20f, arc = 150f)),
     ),
     "seed_keeper" to EnemyDef(
         name = "種の番人", tier = "normal", color = "#7aa05a", hp = 70f, speed = 52f, w = 20f, h = 22f,
         seeRange = 320f, contactKB = 180f, biome = PlanetBiome.NATURE,
-        intelligence = 0.8f, bravery = 0.4f, canBeg = true, mercyThreshold = 0.3f, canSpeak = true, speechStyle = "polite", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.8f, bravery = 0.4f, canBeg = true, mercyThreshold = 0.3f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("heal", cd = 8f, amount = 40f), AttackSpec("shot", cd = 1.8f, dmg = 9f, speed = 200f, life = 1.5f)),
     ),
     "canopy_archer" to EnemyDef(
         name = "梢の射手", tier = "normal", color = "#5a8a4a", hp = 60f, speed = 84f, w = 18f, h = 22f,
         seeRange = 420f, contactKB = 160f, biome = PlanetBiome.NATURE,
-        intelligence = 0.6f, bravery = 0.5f, canHideAndRest = true, canSpeak = true, lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.6f, bravery = 0.5f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT,
         dodge = DodgeSpec(0.16f, 0.14f, 2.2f),
         attacks = listOf(AttackSpec("shot", cd = 1.3f, dmg = 13f, speed = 260f, life = 1.8f)),
     ),
@@ -925,19 +925,19 @@ private fun expansionSociety(): Map<String, EnemyDef> = mapOf(
     "forge_priest" to EnemyDef(
         name = "炉の司祭", tier = "normal", color = "#c05a2a", hp = 84f, speed = 48f, w = 22f, h = 26f,
         seeRange = 340f, contactKB = 220f, biome = PlanetBiome.MAGMA,
-        intelligence = 0.8f, bravery = 0.7f, canSpeak = true, speechStyle = "archaic", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.8f, bravery = 0.7f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("nova", cd = 4f, dmg = 12f, count = 6, speed = 160f, life = 1.4f), AttackSpec("heal", cd = 10f, amount = 50f)),
     ),
     "slag_brute" to EnemyDef(
         name = "鉱滓の荒くれ", tier = "normal", color = "#8a4a2a", hp = 150f, speed = 58f, w = 28f, h = 28f,
         seeRange = 300f, contactKB = 320f, biome = PlanetBiome.MAGMA,
-        intelligence = 0.2f, bravery = 1f, canSpeak = true, speechStyle = "savage", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.2f, bravery = 1f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("charge_melee", cd = 3.2f, range = 100f, reach = 38f, windup = 0.8f, dmg = 20f, kb = 440f)),
     ),
     "ember_dancer" to EnemyDef(
         name = "熾の踊り手", tier = "normal", color = "#e08a4a", hp = 56f, speed = 104f, w = 16f, h = 20f,
         seeRange = 320f, contactKB = 150f, biome = PlanetBiome.MAGMA,
-        intelligence = 0.5f, bravery = 0.6f, canSpeak = true, lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.5f, bravery = 0.6f, lifeKind = LifeKind.SAPIENT,
         dodge = DodgeSpec(0.20f, 0.12f, 1.8f),
         attacks = listOf(AttackSpec("spray", cd = 2.4f, dmg = 9f, speed = 190f, count = 3, spread = 0.6f)),
     ),
@@ -945,77 +945,77 @@ private fun expansionSociety(): Map<String, EnemyDef> = mapOf(
     "glacier_monk" to EnemyDef(
         name = "氷河の修道士", tier = "normal", color = "#9ab8d0", hp = 78f, speed = 44f, w = 22f, h = 26f,
         seeRange = 320f, contactKB = 200f, biome = PlanetBiome.ICE,
-        intelligence = 0.9f, bravery = 0.5f, canBeg = true, mercyThreshold = 0.4f, canSpeak = true, speechStyle = "polite", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.9f, bravery = 0.5f, canBeg = true, mercyThreshold = 0.4f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("guard", cd = 7f, duration = 1.8f, mul = 0.4f), AttackSpec("shot", cd = 1.6f, dmg = 11f, speed = 220f, life = 1.6f)),
     ),
     "shard_lancer" to EnemyDef(
         name = "氷片の槍騎兵", tier = "normal", color = "#7aa0c8", hp = 88f, speed = 78f, w = 22f, h = 24f,
         seeRange = 360f, contactKB = 260f, biome = PlanetBiome.ICE,
-        intelligence = 0.5f, bravery = 0.8f, canSpeak = true, lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.5f, bravery = 0.8f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("charge_melee", cd = 2.8f, range = 130f, reach = 40f, windup = 0.6f, dmg = 18f, kb = 400f)),
     ),
     "aurora_seer" to EnemyDef(
         name = "極光の巫", tier = "normal", color = "#a0d0c0", hp = 62f, speed = 50f, w = 18f, h = 24f,
         seeRange = 400f, contactKB = 160f, biome = PlanetBiome.ICE,
-        intelligence = 0.9f, bravery = 0.3f, canHideAndRest = true, canSpeak = true, speechStyle = "archaic", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.9f, bravery = 0.3f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("homing", cd = 3.4f, dmg = 12f, speed = 130f, turn = 2.2f, life = 3f)),
     ),
     // GAS
     "wind_cantor" to EnemyDef(
         name = "風の聖歌員", tier = "normal", color = "#b0c8a0", hp = 58f, speed = 72f, w = 18f, h = 22f,
         seeRange = 360f, contactKB = 140f, gravityResponse = 0f, biome = PlanetBiome.GAS,
-        intelligence = 0.7f, bravery = 0.4f, canSpeak = true, speechStyle = "polite", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.7f, bravery = 0.4f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("spiral", cd = 3.6f, dmg = 9f, count = 6, speed = 150f, life = 1.8f)),
     ),
     "storm_herald" to EnemyDef(
         name = "嵐の触れ役", tier = "normal", color = "#8a9ad0", hp = 74f, speed = 88f, w = 20f, h = 20f,
         seeRange = 400f, contactKB = 180f, gravityResponse = 0f, biome = PlanetBiome.GAS,
-        intelligence = 0.6f, bravery = 0.7f, canSpeak = true, speechStyle = "savage", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.6f, bravery = 0.7f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("twin_shot", cd = 1.8f, dmg = 10f, speed = 240f, life = 1.6f)),
     ),
     "pressure_warden" to EnemyDef(
         name = "気圧の番人", tier = "normal", color = "#6a7a96", hp = 120f, speed = 40f, w = 26f, h = 26f,
         seeRange = 320f, contactKB = 300f, gravityResponse = 0f, biome = PlanetBiome.GAS,
-        intelligence = 0.8f, bravery = 0.9f, protectiveness = 0.7f, canSpeak = true, speechStyle = "mechanical", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.8f, bravery = 0.9f, protectiveness = 0.7f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("shockwave", cd = 4.6f, dmg = 14f, range = 120f, windup = 0.9f, kb = 420f)),
     ),
     // DEAD
     "bone_scribe" to EnemyDef(
         name = "骨の書記", tier = "normal", color = "#9a948a", hp = 66f, speed = 46f, w = 20f, h = 24f,
         seeRange = 340f, contactKB = 180f, biome = PlanetBiome.DEAD,
-        intelligence = 0.9f, bravery = 0.4f, canBeg = true, mercyThreshold = 0.35f, canSpeak = true, speechStyle = "mechanical", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.9f, bravery = 0.4f, canBeg = true, mercyThreshold = 0.35f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("shot", cd = 1.5f, dmg = 12f, speed = 210f, life = 1.7f)),
     ),
     "grave_keeper" to EnemyDef(
         name = "墓守", tier = "normal", color = "#6a655c", hp = 130f, speed = 42f, w = 26f, h = 28f,
         seeRange = 300f, contactKB = 300f, biome = PlanetBiome.DEAD,
-        intelligence = 0.6f, bravery = 0.9f, protectiveness = 0.9f, canSpeak = true, speechStyle = "archaic", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.6f, bravery = 0.9f, protectiveness = 0.9f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("slam", cd = 3.2f, dmg = 18f, range = 60f, windup = 0.9f, kb = 400f)),
     ),
     "ash_pilgrim" to EnemyDef(
         name = "灰の巡礼", tier = "normal", color = "#8a8478", hp = 54f, speed = 60f, w = 18f, h = 22f,
         seeRange = 320f, contactKB = 150f, biome = PlanetBiome.DEAD,
         intelligence = 0.7f, bravery = 0.2f, canBeg = true, mercyThreshold = 0.5f, canHideAndRest = true,
-        canSpeak = true, speechStyle = "polite", lifeKind = LifeKind.SAPIENT,
+        lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("melee", cd = 1.4f, dmg = 9f, range = 14f, arc = 120f)),
     ),
     // LONELY
     "waymark_tender" to EnemyDef(
         name = "道標の手入れ人", tier = "normal", color = "#a09a8a", hp = 60f, speed = 50f, w = 20f, h = 22f,
         seeRange = 300f, contactKB = 160f, biome = PlanetBiome.LONELY,
-        intelligence = 0.8f, bravery = 0.3f, canBeg = true, mercyThreshold = 0.4f, canSpeak = true, speechStyle = "polite", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.8f, bravery = 0.3f, canBeg = true, mercyThreshold = 0.4f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("melee", cd = 1.5f, dmg = 8f, range = 14f, arc = 120f)),
     ),
     "echo_hermit" to EnemyDef(
         name = "木霊の隠者", tier = "normal", color = "#7a8a96", hp = 72f, speed = 44f, w = 20f, h = 24f,
         seeRange = 360f, contactKB = 170f, biome = PlanetBiome.LONELY,
-        intelligence = 0.9f, bravery = 0.4f, canHideAndRest = true, canSpeak = true, speechStyle = "archaic", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.9f, bravery = 0.4f, canHideAndRest = true, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(AttackSpec("burst", cd = 3f, dmg = 9f, count = 3, speed = 190f, spread = 0.3f)),
     ),
     "stray_knight" to EnemyDef(
         name = "はぐれ騎士", tier = "normal", color = "#96865c", hp = 140f, speed = 62f, w = 26f, h = 28f,
         seeRange = 340f, contactKB = 300f, biome = PlanetBiome.LONELY,
-        intelligence = 0.5f, bravery = 1f, canSpeak = true, speechStyle = "savage", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.5f, bravery = 1f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("charge_melee", cd = 3f, range = 110f, reach = 40f, windup = 0.7f, dmg = 22f, kb = 460f),
             AttackSpec("guard", cd = 8f, duration = 1.5f, mul = 0.4f),
@@ -1259,13 +1259,13 @@ private fun expansionWildlife(): Map<String, EnemyDef> = mapOf(
         bravery = 0.55f, // v2.138 公正な野生: an ambusher of fish, not keepers
     ),
     "gravity_whale" to EnemyDef(
-        name = "重力鯨", lore = "計り知れぬほど大きく、この上なく穏やか", tier = "normal", color = "#5a6a88", hp = 400f, speed = 45f, w = 70f, h = 30f,
+        name = "重力鯨", tier = "normal", color = "#5a6a88", hp = 400f, speed = 45f, w = 70f, h = 30f,
         seeRange = 220f, contactKB = 60f, gravityResponse = 0f,
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.APEX, diet = Diet.CARNIVORE, herdAffinity = 0.1f, fear = 0.05f, territoryRadius = 200f, 
         bravery = 0.2f, // v2.138 公正な野生: vast and utterly gentle
     ),
     "song_whale" to EnemyDef(
-        name = "歌鯨", lore = "ただ歌うだけの巨体。争いを知らない", tier = "normal", color = "#7a88a8", hp = 380f, speed = 40f, w = 66f, h = 28f,
+        name = "歌鯨", tier = "normal", color = "#7a88a8", hp = 380f, speed = 40f, w = 66f, h = 28f,
         seeRange = 220f, contactKB = 60f, gravityResponse = 0f,
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.APEX, diet = Diet.CARNIVORE, herdAffinity = 0.1f, fear = 0.05f, territoryRadius = 180f, 
         bravery = 0.15f, // v2.138 公正な野生: it only sings
@@ -1279,13 +1279,13 @@ private fun expansionWildlife(): Map<String, EnemyDef> = mapOf(
 
     // --- v2.135 満ちる海: the tyrant, the island, and the island's retinue ---
     "tyrant_shark" to EnemyDef(
-        name = "暴君鮫", lore = "海の暴君。縄張りに入る者を大小問わず狩る", tier = "normal", color = "#8a5a68", hp = 480f, speed = 130f, w = 54f, h = 22f,
+        name = "暴君鮫", tier = "normal", color = "#8a5a68", hp = 480f, speed = 130f, w = 54f, h = 22f,
         seeRange = 340f, contactKB = 380f, gravityResponse = 0f,
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.APEX, diet = Diet.CARNIVORE, herdAffinity = 0f,
         fear = 0.02f, territoryRadius = 320f, // bravery 1 (default) — v2.132 敵対 makes it hunt sapients and the keeper
     ),
     "isle_whale" to EnemyDef(
-        name = "島鯨", lore = "漂う島。背に生態系を乗せ、何ものにも動じない", tier = "normal", color = "#48607e", hp = 1200f, speed = 26f, w = 120f, h = 50f,
+        name = "島鯨", tier = "normal", color = "#48607e", hp = 1200f, speed = 26f, w = 120f, h = 50f,
         seeRange = 220f, contactKB = 120f, gravityResponse = 0f,
         lifeKind = LifeKind.WILDLIFE, wildRole = WildRole.HERD, diet = Diet.HERBIVORE, herdAffinity = 0.2f, fear = 0.02f, // a drifting island — nothing spooks it
     ),
@@ -1299,7 +1299,7 @@ private fun expansionWildlife(): Map<String, EnemyDef> = mapOf(
     // (APPEND-ONLY, like every entry: insertion order is the determinism contract. The surge's
     // boss pool is filterValues{tier=="boss"}, so these join the rotation with zero wiring.)
     "rust_sovereign" to EnemyDef(
-        name = "錆の王(ボス)", lore = "錆の巨人に冠を戴かせたもの。止まった機構の王", tier = "boss", color = "#a86a3a", hp = 1400f, speed = 30f, w = 48f, h = 48f,
+        name = "錆の王(ボス)", tier = "boss", color = "#a86a3a", hp = 1400f, speed = 30f, w = 48f, h = 48f,
         seeRange = 420f, contactKB = 480f, gravityResponse = 1.4f,
         attacks = listOf(
             AttackSpec("slam", cd = 3.2f, dmg = 30f, range = 90f, windup = 1.0f, kb = 560f),
@@ -1308,9 +1308,9 @@ private fun expansionWildlife(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "grand_archivist" to EnemyDef(
-        name = "大書庫長(ボス)", lore = "消去APIのない台帳を守る者。あなたの所業も綴じられる", tier = "boss", color = "#c8b888", hp = 1150f, speed = 42f, w = 40f, h = 44f,
+        name = "大書庫長(ボス)", tier = "boss", color = "#c8b888", hp = 1150f, speed = 42f, w = 40f, h = 44f,
         seeRange = 500f, contactKB = 340f, gravityResponse = 0.8f,
-        intelligence = 0.95f, canSpeak = true, speechStyle = "mechanical", lifeKind = LifeKind.SAPIENT,
+        intelligence = 0.95f, lifeKind = LifeKind.SAPIENT,
         attacks = listOf(
             AttackSpec("summon", cd = 6.5f, count = 4, minion = "archive_moth"),
             AttackSpec("barrage", cd = 3.8f, dmg = 11f, count = 9, speed = 220f, spread = 1.0f),
@@ -1318,7 +1318,7 @@ private fun expansionWildlife(): Map<String, EnemyDef> = mapOf(
         ),
     ),
     "tide_sovereign" to EnemyDef(
-        name = "大潮の番人(ボス)", lore = "潮を統べる冠。寄せては返す波のように、癒えては襲う", tier = "boss", color = "#3a7ab0", hp = 1300f, speed = 38f, w = 44f, h = 44f,
+        name = "大潮の番人(ボス)", tier = "boss", color = "#3a7ab0", hp = 1300f, speed = 38f, w = 44f, h = 44f,
         seeRange = 460f, contactKB = 380f, gravityResponse = 0.9f,
         attacks = listOf(
             AttackSpec("shockwave", cd = 4.6f, dmg = 20f, range = 170f, windup = 1.0f, kb = 500f),

@@ -63,12 +63,12 @@ class ItemCatalogTest {
         assertEquals(ItemKind.LORE, ItemCatalog.dropFor(999).kind)
     }
 
-    @Test fun `every consumable does something and every lore item has text`() {
+    @Test fun `every consumable does something and every lore item still labels itself`() {
         for (c in ItemCatalog.ALL.filter { it.kind == ItemKind.CONSUMABLE }) {
             assertTrue(c.consume != ConsumeKind.NONE && c.power > 0f, "${c.id} has no effect")
         }
         for (l in ItemCatalog.ALL.filter { it.kind == ItemKind.LORE }) {
-            assertTrue(l.lore.isNotBlank(), "${l.id} has no lore text")
+            assertTrue(l.desc.isNotBlank(), "${l.id} has no desc") // 資料品: name + desc + price, nothing else
         }
         assertTrue(ItemCatalog.ALL.count { it.kind == ItemKind.CONSUMABLE } >= 10)
         assertTrue(ItemCatalog.ALL.count { it.kind == ItemKind.LORE } >= 10)
@@ -103,7 +103,7 @@ class ItemCatalogTest {
         assertEquals(listOf("acc_boots" to 2, "med_spray" to 1), groups.map { it.first.id to it.second })
     }
 
-    @Test fun `the starter backpack teaches the world - it carries the mechanic's letter`() {
+    @Test fun `the starter backpack carries a lore item and a consumable`() {
         assertTrue(ItemCatalog.starterBackpack().any { it.kind == ItemKind.LORE })
         assertTrue(ItemCatalog.starterBackpack().any { it.kind == ItemKind.CONSUMABLE })
     }

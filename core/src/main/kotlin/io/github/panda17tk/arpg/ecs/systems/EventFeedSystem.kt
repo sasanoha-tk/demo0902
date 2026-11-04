@@ -1,7 +1,6 @@
 package io.github.panda17tk.arpg.ecs.systems
 
 import com.github.quillraven.fleks.IntervalSystem
-import io.github.panda17tk.arpg.sim.PlanetContext
 import io.github.panda17tk.arpg.sim.PlanetSocietyState
 import io.github.panda17tk.arpg.sim.SocietyEventDiff
 import io.github.panda17tk.arpg.sim.Tuning
@@ -22,11 +21,10 @@ class EventFeedSystem : IntervalSystem() {
 
     override fun onTick() {
         if (worldState.mode != WorldMode.SURFACE) return
-        val ctx = worldState.context ?: PlanetContext.NEUTRAL
         val cur = worldState.society
         val events = worldState.recentEvents
         prev?.let { before ->
-            events.addAll(SocietyEventDiff.diff(before, cur, ctx))
+            events.addAll(SocietyEventDiff.diff(before, cur))
             while (events.size > Tuning.EVENT_FEED_MAX) events.removeAt(0) // oldest out first
         }
         prev = cur.copyState() // the one per-tick copy the perf budget allows (§14.2)

@@ -44,14 +44,13 @@ object Modals {
         UiButton(hudW - PAUSE_BTN - MARGIN, hudH - PAUSE_BTN - MARGIN, PAUSE_BTN, PAUSE_BTN, "II")
 
     /** Pause overlay: 再開 / 最初からやり直す / 操作説明 (+ この星の記憶 on a surface), stacked and centered. */
-    fun pauseButtons(hudW: Float, hudH: Float, includeMemory: Boolean = false, simActive: Boolean = false, challengeActive: Boolean = false): List<UiButton> =
+    fun pauseButtons(hudW: Float, hudH: Float, includeMemory: Boolean = false, simActive: Boolean = false): List<UiButton> =
         stack(
             hudW, hudH,
             buildList {
                 add("再開"); add("最初からやり直す"); add("操作説明")
                 if (includeMemory) add("この星の記憶")
-                // v2.53: the old wave sim, walled off. v2.112: a proving run names itself honestly.
-                add(if (challengeActive) "検証ランを終了" else if (simActive) "訓練を終了" else "旧式戦闘訓練")
+                add(if (simActive) "訓練を終了" else "旧式戦闘訓練") // v2.53: the old wave sim, walled off
                 add("タイトルへ") // v2.58: auto-saves the run on the way out
                 if (!includeMemory) add("写真モード") // v2.187: space pauses only (surface stays compact)
                 add("宇宙の記憶を消す")

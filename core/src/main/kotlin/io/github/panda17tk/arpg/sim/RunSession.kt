@@ -31,15 +31,13 @@ class RunSession(
     var cometSwept: Boolean = false
     var throneClaimed: Boolean = false // v2.184 濃い外縁III 沈黙の玉座 (per-run, held across rebuilds & saves)
 
-    /** 着陸1回ぶんの決定事項 — everything GameScreen needs to build the surface and greet the player. */
+    /** 着陸1回ぶんの決定事項 — everything GameScreen needs to build the surface. */
     data class LandingPlan(
         val seed: Long,
         val biome: PlanetBiome,
         val context: PlanetContext,
         val society: PlanetSocietyState,     // recall()ed copy that seeds this visit
         val known: Boolean,                  // the planet has been visited before
-        val greeting: SocietySpeechTrigger?, // landing greeting (known planets only)
-        val showGreeting: Boolean,           // ReturnVisitLine has a HUD sentence for it
     )
 
     /** Decide one landing: advance the surface seed, remember the return spot, recall the planet's memory. */
@@ -55,8 +53,6 @@ class RunSession(
             context = cand.context,
             society = recalled,
             known = known,
-            greeting = if (known) SocietySpeechLines.returnGreeting(recalled) else null,
-            showGreeting = known && ReturnVisitLine.hudLine(recalled) != null,
         )
     }
 

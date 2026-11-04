@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
  *
  * [LifeKind] separates the three populations that share the `Mob` machinery:
  *  - [HOSTILE]  legacy always-aggressive enemies (the space waves) — the back-compat default.
- *  - [SAPIENT]  intelligent society creatures that speak, protect kin and surrender (driven by AISystem).
+ *  - [SAPIENT]  intelligent society creatures that protect kin and surrender (driven by AISystem).
  *  - [WILDLIFE] mute wild animals that graze, herd, flee and hunt each other (driven by WildlifeSystem).
  */
 @Serializable

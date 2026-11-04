@@ -13,7 +13,7 @@ class MarketTest {
         assertFalse(Market.isOpen(1f))
     }
 
-    @Test fun `the stock is deterministic per planet and never sells stories`() {
+    @Test fun `the stock is deterministic per planet and keeps lore off the stalls`() {
         val a = Market.stockFor(42L)
         val b = Market.stockFor(42L)
         assertEquals(a, b)

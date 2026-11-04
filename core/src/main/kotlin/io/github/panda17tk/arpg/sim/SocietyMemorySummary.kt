@@ -6,7 +6,7 @@ enum class Mark { DONE, NONE, BAD }
 /**
  * The planet-memory summary shown from the surface pause (LP v2.25): the facts the society holds
  * about this visit and its three feelings as gauges. Read-only over [PlanetSocietyState]; the words
- * live only here (§14.3). Facts come out gravest-first (same order as SocietySpeechLines.triggerFor),
+ * live only here (§14.3). Facts come out gravest-first (the same order as the event feed),
  * deeds-done only — except the relic, whose 「−」 line stays visible as an exploration hint (FR-4.3).
  */
 object SocietyMemorySummary {

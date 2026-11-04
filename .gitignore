@@ -18,7 +18,8 @@ local.properties
 Thumbs.db
 # Superpowers brainstorm scratch
 .superpowers/
-# Runtime-generated procedural SFX cache
+# Runtime-generated procedural SFX/BGM cache
 desktop/sfx/
+desktop/bgm/
 # Kotlin compiler/daemon error logs (build artifacts)
 .kotlin/

@@ -8,6 +8,7 @@ import io.github.panda17tk.arpg.ecs.components.Smoke
 import io.github.panda17tk.arpg.ecs.components.Stamina
 import io.github.panda17tk.arpg.input.InputState
 import io.github.panda17tk.arpg.item.ItemCatalog
+import io.github.panda17tk.arpg.item.ItemKind
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -91,8 +92,9 @@ class ItemUseTest {
         assertNull(ItemUse.use(gw.world, gw.player, ItemCatalog.byId("lore_letter")!!))
     }
 
-    @Test fun `lore drops resolve to readable items`() {
+    @Test fun `lore drops resolve to sellable lore items`() {
         val lore = ItemCatalog.dropFor(900)
-        assertTrue(lore.lore.lines().size >= 2) // multi-line readables, not one-liners
+        assertEquals(ItemKind.LORE, lore.kind)
+        assertTrue(lore.desc.isNotBlank()) // the row label the inventory prints
     }
 }

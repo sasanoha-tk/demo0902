@@ -60,9 +60,6 @@ class MobDamageSystem(private val grid: SpatialGrid<Entity>) :
                 val bkey = mob.def.id.ifEmpty { mob.kind } // v2.113 図鑑: the stable roster key
                 gameOver.killsByKind[bkey] = (gameOver.killsByKind[bkey] ?: 0) + 1
                 healOnKill()
-                // v2.45 星の依頼: the visit's tallies quests are paid from at takeoff.
-                worldState.questKills++
-                if (big) worldState.questElites++
             } else if (wild && !mob.fellByWild) {
                 // v2.130 図鑑: the player's own wild kills enter the field book — a predator's hunt
                 // does not. Still no score, no loot, no quest credit: the ecosystem framing stands.
@@ -74,12 +71,6 @@ class MobDamageSystem(private val grid: SpatialGrid<Entity>) :
             }
             // v2.132 敵対: a hunter's kill of a SAPIENT is the wild's deed too — no score, no loot
             // (the fellByWild flag now guards both sides of the lifeKind fence).
-            if (wild && mob.def.wildRole == WildRole.PREDATOR) {
-                // v2.69 護衛 / v2.138 公正な野生: only the KEEPER's kills fulfil the escort —
-                // the apex eating a wolf is the food web at work, not the player's deed
-                // (predators die to each other constantly now; the quest must not self-complete).
-                if (!mob.fellByWild) worldState.questPredators++
-            }
             // v2.85 段階的な死 / v2.88 撃破の儀式: bodies squash out, then burst. A true boss or a
             // bounty head goes grander — five chained blasts, a white-out, a longer slow-mo and a
             // gold reward shower (the player's kills only, never the wild's own hunts).

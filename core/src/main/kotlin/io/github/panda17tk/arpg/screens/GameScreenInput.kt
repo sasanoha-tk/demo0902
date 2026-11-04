@@ -56,28 +56,20 @@ import io.github.panda17tk.arpg.input.TouchButton
 import io.github.panda17tk.arpg.input.TouchControls
 import io.github.panda17tk.arpg.math.Rng
 import io.github.panda17tk.arpg.planet.PlanetBiome
-import io.github.panda17tk.arpg.planet.PlanetQuest
-import io.github.panda17tk.arpg.planet.QuestKind
 import io.github.panda17tk.arpg.render.Fonts
 import io.github.panda17tk.arpg.render.Hud
 import io.github.panda17tk.arpg.render.PlayerPose
 import io.github.panda17tk.arpg.render.SceneRenderer
 import io.github.panda17tk.arpg.render.TouchOverlay
-import io.github.panda17tk.arpg.save.Achievement
-import io.github.panda17tk.arpg.save.Achievements
-import io.github.panda17tk.arpg.save.Challenge
 import io.github.panda17tk.arpg.save.DeathRelic
 import io.github.panda17tk.arpg.save.PlanetMemoryCodec
 import io.github.panda17tk.arpg.save.PreferencesMemoryStore
 import io.github.panda17tk.arpg.save.PreferencesRelicStore
 import io.github.panda17tk.arpg.save.PreferencesRunSaveStore
 import io.github.panda17tk.arpg.save.RunSaveDto
-import io.github.panda17tk.arpg.save.Scores
 import io.github.panda17tk.arpg.sim.DesyncGauge
 import io.github.panda17tk.arpg.sim.Drift
-import io.github.panda17tk.arpg.sim.Epithet
 import io.github.panda17tk.arpg.sim.EventKind
-import io.github.panda17tk.arpg.sim.MemoryCoreLog
 import io.github.panda17tk.arpg.sim.PlanetCardInfo
 import io.github.panda17tk.arpg.sim.PlanetEvent
 import io.github.panda17tk.arpg.sim.PlanetContext
@@ -85,7 +77,6 @@ import io.github.panda17tk.arpg.sim.PlanetLexicon
 import io.github.panda17tk.arpg.sim.PlanetScan
 import io.github.panda17tk.arpg.sim.PlanetSocietyState
 import io.github.panda17tk.arpg.sim.RunSession
-import io.github.panda17tk.arpg.sim.SocietyMemorySummary
 import io.github.panda17tk.arpg.sim.ReturnVisitEffects
 import io.github.panda17tk.arpg.sim.RewardBundle
 import io.github.panda17tk.arpg.sim.SurfaceGoals
@@ -102,11 +93,9 @@ import io.github.panda17tk.arpg.sim.WorldMode
 import io.github.panda17tk.arpg.sim.WorldState
 import io.github.panda17tk.arpg.sim.Weather
 import io.github.panda17tk.arpg.sim.WeatherKind
-import io.github.panda17tk.arpg.sim.WreckLog
 import io.github.panda17tk.arpg.ui.HudLayout
 import io.github.panda17tk.arpg.ui.InvTab
 import io.github.panda17tk.arpg.ui.InventoryLayout
-import io.github.panda17tk.arpg.ui.Logbook
 import io.github.panda17tk.arpg.ui.Modals
 import io.github.panda17tk.arpg.ui.Onboarding
 import io.github.panda17tk.arpg.ui.Overlay
@@ -139,7 +128,7 @@ internal fun GameScreen.pollGameplayTouch(paused: Boolean) {
                 (ws.mode == WorldMode.SURFACE && playerOnEscapePad())
             val hasOverclock = with(gw.world) { gw.player[Gear].loadout.hasOverclockThruster }
             val tOwned = with(gw.world) { gw.player[Arsenal] }.weapons.size
-            touch.poll(input, hudViewport, tBlocks, tw.mag, tw.def.magSize, canLand, hasOverclock, controlSwap, io.github.panda17tk.arpg.save.TuneMode.active && !challengeMode, ownedWeapons = tOwned) // v2.106 公正化 / v2.153 所持スロット巡回
+            touch.poll(input, hudViewport, tBlocks, tw.mag, tw.def.magSize, canLand, hasOverclock, controlSwap, io.github.panda17tk.arpg.save.TuneMode.active, ownedWeapons = tOwned) // v2.106 公正化 / v2.153 所持スロット巡回
         } else if (touchEnabled) {
             touch.suppressEdgesOnce() // v2.153: a modal gated the poll — swallow the stale edges on resume
         }

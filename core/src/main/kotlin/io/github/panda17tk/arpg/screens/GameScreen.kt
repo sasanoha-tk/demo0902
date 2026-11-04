@@ -56,28 +56,20 @@ import io.github.panda17tk.arpg.input.TouchButton
 import io.github.panda17tk.arpg.input.TouchControls
 import io.github.panda17tk.arpg.math.Rng
 import io.github.panda17tk.arpg.planet.PlanetBiome
-import io.github.panda17tk.arpg.planet.PlanetQuest
-import io.github.panda17tk.arpg.planet.QuestKind
 import io.github.panda17tk.arpg.render.Fonts
 import io.github.panda17tk.arpg.render.Hud
 import io.github.panda17tk.arpg.render.PlayerPose
 import io.github.panda17tk.arpg.render.SceneRenderer
 import io.github.panda17tk.arpg.render.TouchOverlay
-import io.github.panda17tk.arpg.save.Achievement
-import io.github.panda17tk.arpg.save.Achievements
-import io.github.panda17tk.arpg.save.Challenge
 import io.github.panda17tk.arpg.save.DeathRelic
 import io.github.panda17tk.arpg.save.PlanetMemoryCodec
 import io.github.panda17tk.arpg.save.PreferencesMemoryStore
 import io.github.panda17tk.arpg.save.PreferencesRelicStore
 import io.github.panda17tk.arpg.save.PreferencesRunSaveStore
 import io.github.panda17tk.arpg.save.RunSaveDto
-import io.github.panda17tk.arpg.save.Scores
 import io.github.panda17tk.arpg.sim.DesyncGauge
 import io.github.panda17tk.arpg.sim.Drift
-import io.github.panda17tk.arpg.sim.Epithet
 import io.github.panda17tk.arpg.sim.EventKind
-import io.github.panda17tk.arpg.sim.MemoryCoreLog
 import io.github.panda17tk.arpg.sim.PlanetCardInfo
 import io.github.panda17tk.arpg.sim.PlanetEvent
 import io.github.panda17tk.arpg.sim.PlanetContext
@@ -85,7 +77,6 @@ import io.github.panda17tk.arpg.sim.PlanetLexicon
 import io.github.panda17tk.arpg.sim.PlanetScan
 import io.github.panda17tk.arpg.sim.PlanetSocietyState
 import io.github.panda17tk.arpg.sim.RunSession
-import io.github.panda17tk.arpg.sim.SocietyMemorySummary
 import io.github.panda17tk.arpg.sim.ReturnVisitEffects
 import io.github.panda17tk.arpg.sim.RewardBundle
 import io.github.panda17tk.arpg.sim.SurfaceGoals
@@ -97,16 +88,13 @@ import io.github.panda17tk.arpg.sim.TakeoffReward
 import io.github.panda17tk.arpg.sim.Tuning
 import io.github.panda17tk.arpg.sim.SystemTrait
 import io.github.panda17tk.arpg.sim.SystemTraits
-import io.github.panda17tk.arpg.sim.WaveEvent
 import io.github.panda17tk.arpg.sim.WorldMode
 import io.github.panda17tk.arpg.sim.WorldState
 import io.github.panda17tk.arpg.sim.Weather
 import io.github.panda17tk.arpg.sim.WeatherKind
-import io.github.panda17tk.arpg.sim.WreckLog
 import io.github.panda17tk.arpg.ui.HudLayout
 import io.github.panda17tk.arpg.ui.InvTab
 import io.github.panda17tk.arpg.ui.InventoryLayout
-import io.github.panda17tk.arpg.ui.Logbook
 import io.github.panda17tk.arpg.ui.Modals
 import io.github.panda17tk.arpg.ui.Onboarding
 import io.github.panda17tk.arpg.ui.Overlay
@@ -123,7 +111,6 @@ import kotlin.math.pow
 
 /** Half-extent of the toroidal box the drifting debris wraps within (matches WorldFactory's seed range). */
 internal const val DRIFT_RANGE = 1400f
-internal const val REMEMBERED_TIME = 5f // seconds the HUD greets a returning player on a remembered planet
 internal const val TOAST_TIME = 3f      // seconds the takeoff send-off toast rides the space HUD (LP v2.29)
 internal const val INV_TIME_SCALE = 0.01f // v2.33: the world crawls at this speed behind the inventory
 internal const val PLANET_TAP_PAD = 48f   // v2.38: extra world-px around a planet that still counts as tapping it
@@ -143,7 +130,6 @@ internal const val SETTINGS_TUTORIAL = "tutorialDone" // v2.60: the boot diagnos
 internal const val SETTINGS_HAPTICS = "hapticsOn"
 internal const val SETTINGS_LEFTY = "leftHanded"    // v2.65: mirror the touch layout
 internal const val SETTINGS_HINTS = "controlHintsOn" // v2.66: how-to guidance (landing, onboarding)
-internal const val SETTINGS_LORE = "loreHintsOn"     // v2.66: the world speaking (core logs, wrecks)
 internal const val SAVED_NOTE_TIME = 2f // seconds the 「セーブした」 flash stays on the SAVE tab
 
 /**
@@ -155,8 +141,6 @@ internal const val SAVED_NOTE_TIME = 2f // seconds the 「セーブした」 fla
 class GameScreen(
     internal val startFresh: Boolean = false, // v2.58 タイトル「はじめから」: abandon the saved run
     internal val startInTraining: Boolean = false, // v2.58 タイトル「旧式戦闘訓練」
-    internal val startInChallenge: Boolean = false, // v2.102 タイトル「検証ラン」: 今週の宙域
-    internal val startInDaily: Boolean = false, // v2.180 今日の宙域: the daily proving run
     internal val slot: Int = 0, // v2.103 セーブスロット: which journey this screen plays
 ) : ScreenAdapter() {
     internal val input = InputState()
@@ -189,8 +173,8 @@ class GameScreen(
 
     // Phase 6b: between-wave upgrade selection (modal — sim freezes until a card is picked).
     // v2.174 命綱: the card draw is seeded ONCE per run (screen-side entropy, recorded in the
-    // save) — the proving run pins it to the week's seed so every contender sees the same
-    // offers, and a recorded seed is one less obstacle on the road to replays.
+    // save) so a restored run picks up exactly the offers it was shown before; a recorded seed
+    // is one less obstacle on the road to replays.
     internal var upgradeSeed = 0L
     internal var upgradeRng = Rng(0L)
     internal var choosing = false
@@ -203,7 +187,6 @@ class GameScreen(
     internal val ambHeat = CombatHeat() // v2.67 状況反応: combat drives the pulse layer
     internal var weatherT = 0f // v2.74 天候: cosmetic time, never sim time
     internal var prevOver = false
-    internal var newBest = false
 
     // Phase 8: on-screen controls (Android only) + audio service.
     internal val touch = TouchControls()
@@ -246,26 +229,22 @@ class GameScreen(
     internal var uiScale = 1f
 
     // Living Planets run state (R1): seeds + per-planet memory live in the pure RunSession; this class
-    // only executes the transitions it plans. rememberedT is a draw-side timer, so it stays here.
     internal val session = RunSession(store = PreferencesMemoryStore(slot)) // v2.103: per-slot universe
-    internal var rememberedT = 0f // seconds left to show the return-visit greeting in the HUD
 
     // Inventory overlay (v2.33): tab state + the run-save backend + a brief note flash (セーブした /
-    // a consumable's effect). readingLore (v2.34) is the readable currently open on the ITEMS tab.
+    // a consumable's effect).
     internal val runStore = PreferencesRunSaveStore(slot) // v2.103: per-slot run save
     // v2.46 遺品回収: what the last death left floating in the void (half the dust, every shard).
     internal val relicStore = PreferencesRelicStore(slot) // v2.103: each journey's own relic
     internal var invTab = InvTab.EQUIP
     internal var invNote: String? = null
     internal var invNoteT = 0f
-    internal var readingLore: ItemDef? = null
     internal var worldSeed = 1L // the seed the CURRENT world was built with (goes into the run save)
     // v2.39: swap the touch roles — melee on the right stick, gun on the ML button (persisted).
     internal var controlSwap = false
     // v2.47: the very first run walks the basics once; completion persists across launches.
     internal var onboardDone = true
     internal var controlHints = true // v2.66 操作ヒント: how-to guidance on/off
-    internal var loreHints = false   // v2.66 世界観ヒント: the world's asides — v2.173: OFF by default, opt-in from settings
     // v2.60 チュートリアル: the keeper-boot diagnostic (layer 1). Null once done or skipped.
     internal var tutorial: TutorialController? = null
     internal var tutPrevPx = Float.NaN
@@ -281,12 +260,10 @@ class GameScreen(
     // v2.53 旧式戦闘訓練: the walled-off wave simulation. Entering snapshots the real run's
     // player (gear/materials/wave); exiting restores it — training gains stay in the training.
     internal var simMode = false
-    internal var dailyChallenge = false // v2.180 今日の宙域: the proving run's daily flavour
     internal var preSimCarry: PlayerCarry? = null
-    // v2.102 検証ラン: this week's proving run — simMode's walls (no landings, no real records,
-    // no achievements) plus a fixed weekly seed and the standard-issue loadout.
-    internal var challengeMode = false
-    internal var challengeWeek = 0L
+    // v2.102: inside the walls nothing counts — no landings, no saves, nothing carried out, no
+    // clears credit — so the drill cannot launder progress into the meta: the player leaves with
+    // exactly the carry they came in with.
     // v2.43: stall slots already bought this landing (the stock is per-planet deterministic).
     internal val marketSold = mutableSetOf<Int>()
     // v2.100 行商船: shelf slots bought under this sky, the approach latch (re-arms after pulling
@@ -312,8 +289,6 @@ class GameScreen(
     internal val eventBanner = io.github.panda17tk.arpg.ui.EventBanner() // v2.86 開幕バナー
     internal val bannerGlyph = com.badlogic.gdx.graphics.g2d.GlyphLayout()
     internal val cEventTmp = Color()
-    internal val cQuestGold = Color.valueOf("ffd980") // v2.87: the star's answer, dust gold
-    internal val cQuestPale = Color.valueOf("fff2c8")
     internal var eventFxT = 0f // v2.86: clock for the event-flavored screen fx
     internal val bossBar = io.github.panda17tk.arpg.ui.BossBar() // v2.88
     // v2.149 倹約第3弾: the HUD foe count and boss-bar scan walked all ~5000 mobs EVERY frame.
@@ -333,12 +308,10 @@ class GameScreen(
     internal var lowHpT = 0f // v2.112 低HP警告: the red rim's breathing clock
     internal var tuneParams: List<io.github.panda17tk.arpg.config.TuneParam> = emptyList()
     internal var softFlash = false // v2.96: photosensitivity — dims the white-outs
-    internal var prevWaveNum = 0 // v2.92: to notice a wave ending (流星群を生き延びた)
-    internal var prevWaveEvent = WaveEvent.NONE
-    // v2.93 エンディング: 0=off, 1..pages=dialogue, pages+1=choice, pages+2=epilogue.
+    // v2.93 エンディング: 0=off, 1..pages=summary, pages+1=choice, pages+2=close.
     internal var endingStage = 0
-    internal var endingSeenThisWorld = false // 「切断」した空では核はもう問わない
-    internal var endingEpilogue: List<String> = io.github.panda17tk.arpg.sim.Endgame.EPILOGUE // v2.185: which close plays
+    internal var endingSeenThisWorld = false // 「切断」した空では核はもう現れない
+    internal var endingEpilogue: List<String> = emptyList() // the close the choice picked (Endgame.epilogue)
 
     // Memory tint per planet id (LP v2.30/10c) — rebuilt only when memory can change (transitions/forget).
     internal var memoryTones: Map<Long, Int> = emptyMap()
@@ -353,8 +326,6 @@ class GameScreen(
     // Surface goal chips (LP v2.26), rebuilt only when their inputs change (§14.2 — no per-frame strings).
     internal var chipsKey = -1
     internal var cachedChips: List<String> = emptyList()
-    // v2.45 星の依頼: the quest chip cache (progress-keyed, same no-per-frame-strings policy).
-    internal var questChipKey = -1
     // v2.176 GCの静音化: the SPACE idle hints and the nav-POI list were rebuilt every frame —
     // strings and Triples for a line that changes a few times a second at most. Keyed caches.
     internal var navPoisKey = -1
@@ -363,11 +334,8 @@ class GameScreen(
     internal var navHint: String? = null
     internal var gateHintKey = Long.MIN_VALUE
     internal var gateHint: String? = null
-    internal var questChip: String? = null
 
     override fun show() {
-        io.github.panda17tk.arpg.save.Workshop.load() // v2.90 工房: the run starts with its boons
-        metaBoons = io.github.panda17tk.arpg.save.Workshop.boons()
         configStore.loadFromDisk()
         uiScale = Gdx.graphics.density.coerceIn(1f, 4f)
         shapes = ShapeRenderer()
@@ -379,9 +347,6 @@ class GameScreen(
         hudViewport = ScreenViewport()
         hudViewport.setUnitsPerPixel(1f / uiScale)
         Sfx.init()
-        Scores.load()
-        Achievements.load() // v2.62
-        io.github.panda17tk.arpg.save.Stats.load() // v2.123
         session.restore() // LP v2.28: the universe remembers you across runs and restarts
         touchEnabled = Gdx.app.type == Application.ApplicationType.Android
         controlSwap = try { Gdx.app.getPreferences(SETTINGS_PREFS).getBoolean(SETTINGS_SWAP, false) } catch (_: Throwable) { false }
@@ -403,18 +368,15 @@ class GameScreen(
         touch.layout.mirrored = try { // v2.65 左利き配置
             Gdx.app.getPreferences(SETTINGS_PREFS).getBoolean(SETTINGS_LEFTY, false)
         } catch (_: Throwable) { false }
-        try { // v2.66: the two hint channels from the settings panel
+        try { // v2.66: the one hint channel, from the settings panel
             val sp = Gdx.app.getPreferences(SETTINGS_PREFS)
             controlHints = sp.getBoolean(SETTINGS_HINTS, true)
-            loreHints = sp.getBoolean(SETTINGS_LORE, false) // v2.173: silent unless the pilot opts in
-            scene.speechEnabled = loreHints // v2.170 文字の消灯: the bubbles follow 世界観ヒント
             input.aimAssist = sp.getBoolean("aimAssist", true) // v2.112 エイム補助
             io.github.panda17tk.arpg.i18n.Lang.en = sp.getBoolean("langEn", false) // v2.115 English表示
         } catch (_: Throwable) { /* defaults stay on */ }
         if (startFresh) runStore.clear() // v2.58: タイトルの「はじめから」は前のランを置いていく
-        if (startFresh || !tryRestoreRun()) newRun(countSortie = !startInTraining && !startInChallenge && !startInDaily) // v2.33/v2.125
+        if (startFresh || !tryRestoreRun()) newRun()
         if (startInTraining && !simMode) toggleTraining() // v2.58: straight into the simulation
-        if ((startInChallenge || startInDaily) && !challengeMode) { dailyChallenge = startInDaily; enterChallenge() } // v2.102 / v2.180
         // v2.60: the boot diagnostic runs once per install (never inside the training sim).
         val tutDone = try { Gdx.app.getPreferences(SETTINGS_PREFS).getBoolean(SETTINGS_TUTORIAL, false) } catch (_: Throwable) { true }
         if (!tutDone && !simMode) tutorial = TutorialController()
@@ -436,7 +398,6 @@ class GameScreen(
      *  and the real player snapshot are all untouched — a simulation leaves no trace but skill. */
     internal fun toggleTraining() {
         if (!simMode) {
-            foldBestiary() // v2.113: the real world's tallies, before the sim
             snapshotSkyTreasures() // v2.169: the training door is a rebuild seam too
             simMode = true
             preSimCarry = PlayerCarry.of(gw.world, gw.player, gw.waveState.num)
@@ -445,8 +406,6 @@ class GameScreen(
             gw = WorldFactory.create(input, configStore.config, seed = TRAINING_SEED, carry = preSimCarry, boons = metaBoons, difficulty = runDifficulty, oceanKeep = io.github.panda17tk.arpg.save.OceanDensity.keep(), area = 1 to 1) // v2.165 海の密度 / v2.166 宙域の九分割
         } else {
             simMode = false
-            challengeMode = false // v2.102: leaving the walled-off world ends the proving run too
-            dailyChallenge = false // v2.180
             gw.world.dispose() // v2.174 命綱
             worldSeed = session.spaceSeed
             gw = WorldFactory.create(input, configStore.config, seed = session.spaceSeed, carry = preSimCarry, boons = metaBoons, trait = SystemTraits.traitFor(session.spaceSeed), difficulty = runDifficulty, ngClears = io.github.panda17tk.arpg.save.Endings.clears, oceanKeep = io.github.panda17tk.arpg.save.OceanDensity.keep(), area = session.areaX to session.areaY, lootedWrecks = session.lootedWrecks, survivorRescued = session.survivorRescued, cometSwept = session.cometSwept, throneClaimed = session.throneClaimed) // v2.160 / v2.165 / v2.166 / v2.169 / v2.184
@@ -455,7 +414,7 @@ class GameScreen(
         }
         accumulator = 0f; camInit = false; choosing = false; offered = false; choices = emptyList()
         lastHp = Float.NaN; lastCardId = null; cachedCard = null
-        chipsKey = -1; cachedChips = emptyList(); questChipKey = -1; questChip = null
+        chipsKey = -1; cachedChips = emptyList()
         marketSold.clear(); traderSold.clear(); traderGreeted = false; pendingJump = false
         rewardToast = if (simMode) "旧式戦闘シミュレーション起動 — 成果は持ち出せない" else "訓練環境を終了した"
         rewardToastT = TOAST_TIME
@@ -463,57 +422,10 @@ class GameScreen(
         syncAmbience() // v2.63: the sim has its own hum
     }
 
-    /** v2.102 検証ラン: enter (or retry) this week's proving run — fixed sky, standard-issue
-     *  loadout, no boons, NORMAL. The real run's snapshot is taken once and kept across retries,
-     *  so leaving the challenge always restores exactly what was left behind. */
-    internal fun enterChallenge() {
-        if (::gw.isInitialized) foldBestiary() // v2.117: entering the proving run is a seam like the training door
-        if (!challengeMode) preSimCarry = PlayerCarry.of(gw.world, gw.player, gw.waveState.num)
-        snapshotSkyTreasures() // v2.169: leaving the real sky for the proving run is a rebuild seam
-        if (::gw.isInitialized) gw.world.dispose() // v2.174 命綱
-        simMode = true; challengeMode = true
-        // v2.106 公正化: the proving run starts from the shipped numbers — session knobs all reset,
-        // and the tuning popup (if open) closes; the tune door itself stays shut while inside.
-        io.github.panda17tk.arpg.config.TuningCatalog.paramsFor(configStore.config).forEach { it.reset() }
-        if (overlay == Overlay.TUNING) overlay = Overlay.NONE
-        challengeWeek = if (dailyChallenge) Challenge.dayOf(System.currentTimeMillis()) else Challenge.weekOf(System.currentTimeMillis()) // v2.180
-        worldSeed = if (dailyChallenge) Challenge.seedForDay(challengeWeek) else Challenge.seedFor(challengeWeek)
-        upgradeSeed = worldSeed; upgradeRng = Rng(upgradeSeed) // v2.174: same card offers for every contender
-        gw = WorldFactory.create(
-            input, configStore.config, seed = worldSeed,
-            trait = SystemTraits.traitFor(worldSeed),
-            difficulty = io.github.panda17tk.arpg.sim.Difficulty.NORMAL,
-            // v2.165 海の密度: the proving run pins 中 — same ocean for every contender,
-            // whatever their device runs at home
-            oceanKeep = io.github.panda17tk.arpg.save.OceanDensity.keep(io.github.panda17tk.arpg.save.OceanDensity.MEDIUM),
-            area = 1 to 1, // v2.166: one fixed centre slice — fair and light
-        )
-        accumulator = 0f; camInit = false; choosing = false; offered = false; choices = emptyList()
-        overlay = Overlay.NONE; lastHp = Float.NaN; prevOver = false; newBest = false
-        lastCardId = null; cachedCard = null
-        chipsKey = -1; cachedChips = emptyList(); questChipKey = -1; questChip = null
-        marketSold.clear(); traderSold.clear(); traderGreeted = false; pendingJump = false
-        rewardToast = if (dailyChallenge) { // v2.180
-            "検証ラン ${Challenge.codeForDay(challengeWeek)} — 今日の宙域。あすには変わる（補助設定は有効）"
-        } else {
-            "検証ラン ${Challenge.codeFor(challengeWeek)} — 全員同じ宙域・同じ装備。残り${Challenge.daysLeft(System.currentTimeMillis())}日（補助設定は有効）"
-        }
-        rewardToastT = TOAST_TIME
-        rebuildMemoryTones()
-        syncAmbience()
-    }
-
-    /** Build (or rebuild) the run and reset per-run screen state (Phase 7 restart).
-     *  [countSortie] is false only when show() builds a throwaway world on the way into the
-     *  training sim or the proving run — that departure is not a real sortie (v2.125). */
-    internal fun newRun(countSortie: Boolean = true) {
-        // v2.117 図鑑: an abandoned run still counts (a death already folded at game over).
-        if (::gw.isInitialized && !gw.gameOver.isOver) foldBestiary()
+    /** Build (or rebuild) the run and reset per-run screen state (Phase 7 restart). */
+    internal fun newRun() {
         if (::gw.isInitialized) gw.world.dispose() // v2.174 命綱
         simMode = false; preSimCarry = null // v2.53: a real restart always leaves the simulation
-        challengeMode = false // v2.102
-        dailyChallenge = false // v2.180
-        if (countSortie) io.github.panda17tk.arpg.save.Stats.addSortie() // v2.123: a fresh real run leaves the hangar
         session.reset() // a fresh run forgets every planet
         upgradeSeed = System.nanoTime(); upgradeRng = Rng(upgradeSeed) // v2.174: one draw per run
         runStore.clear() // v2.33: restarting abandons the saved run
@@ -535,10 +447,8 @@ class GameScreen(
         lastHp = Float.NaN
         lastKills = 0
         prevOver = false
-        newBest = false
         pendingJump = false
         lastCardId = null; cachedCard = null
-        questChipKey = -1; questChip = null
         marketSold.clear(); traderSold.clear(); traderGreeted = false
         // v2.46 遺品回収: the previous death's bundle drifts where you fell (a fresh run rebuilds
         // the same first system, so the spot is real). A surface death washes up near the start.
@@ -578,22 +488,13 @@ class GameScreen(
         if (ws.mode == WorldMode.SPACE) {
             val cand = ws.landingCandidate ?: return
             tutorial?.onLanded() // v2.60: the first touchdown completes the boot diagnostic
-            tryUnlock(Achievement.FIRST_LANDING) // v2.62
-            val plan = session.planLanding(cand) // seeds, memory recall and the greeting all decided in one place
+            val plan = session.planLanding(cand) // seeds and memory recall decided in one place
             // R2: the remembered society goes INTO the factory, so spawn-time consumers see it from tick 0.
             transitionWorld(
                 WorldMode.SURFACE, plan.biome, plan.seed, null, plan.context, plan.society,
                 Weather.kindFor(cand.id, plan.biome), // v2.75: the planet's own sky rides in
             )
-            when (gw.worldState.weather) { // v2.77: the rare skies leave a line in the record
-                WeatherKind.THUNDER -> tryUnlock(Achievement.STORM_WATCHER)
-                WeatherKind.AURORA -> tryUnlock(Achievement.AURORA_GAZER)
-                else -> {}
-            }
-            // Return-visit payoff: a remembered planet greets the player by reputation (shown briefly in the HUD).
-            gw.worldState.rememberedPlanet = plan.known
-            gw.worldState.returnVisitGreeting = plan.greeting
-            rememberedT = if (plan.showGreeting) REMEMBERED_TIME else 0f
+            // Return-visit payoff (LP v2.29): a remembered planet shows its numeric record in the HUD briefly.
         } else {
             if (!playerOnEscapePad()) return // must stand on the escape pad to leave the surface
             // Takeoff send-off (LP v2.29): the star's parting gift, applied BEFORE the transition so
@@ -603,22 +504,11 @@ class GameScreen(
                 TakeoffReward.compute(soc, it, gw.worldState.context ?: PlanetContext.NEUTRAL)
             } ?: RewardBundle()
             RewardApply.apply(gw.world, gw.player, reward)
-            // v2.72: requests now settle on the spot (依頼の連鎖) — takeoff only hands over the gift.
             val toast = TakeoffReward.toastFor(reward, soc.childKilled)
             rewardToast = toast
             rewardToastT = if (rewardToast != null) TOAST_TIME else 0f
             tutorial?.onTakeoff() // v2.61: lifting off the first star completes the diagnostic
             val (seed, spawn) = session.completeTakeoff(soc) // fold the visit back into memory
-            // v2.62 実績: the epithet + restoration milestones settle at takeoff, when memory folds.
-            when (Epithet.of(session.memory.memories.values)) {
-                "星還し" -> tryUnlock(Achievement.STAR_RETURNER)
-                "王殺し" -> tryUnlock(Achievement.KING_SLAYER)
-            }
-            if (syncPercent() >= 50) tryUnlock(Achievement.SYNC_50)
-            if (syncPercent() >= 90) tryUnlock(Achievement.SYNC_90) // v2.68
-            if (session.memory.memories.values.any { it.relicClaimed }) tryUnlock(Achievement.RELIC_KEEPER) // v2.68
-            if (gw.worldState.questKills == 0) tryUnlock(Achievement.QUIET_VISIT) // v2.70: no hostile fell this visit
-            if (session.memory.memories.values.count { it.apexKilled } >= 2) tryUnlock(Achievement.BEAST_HUNTER) // v2.70
             transitionWorld(WorldMode.SPACE, null, seed, spawn) // same system, beside the planet we left
         }
     }
@@ -672,7 +562,6 @@ class GameScreen(
         weather: WeatherKind = WeatherKind.CLEAR,
     ) {
         snapshotSkyTreasures() // v2.169 診断修正: emptied caches must not restock on the rebuild
-        foldBestiary() // v2.113: fold before the swap
         val carry = PlayerCarry.of(gw.world, gw.player, gw.waveState.num)
         worldSeed = seed
         gw.world.dispose() // v2.153: release the outgoing world's systems at the seam
@@ -682,13 +571,11 @@ class GameScreen(
         choosing = false; offered = false; choices = emptyList(); lastHp = Float.NaN
         lastCardId = null; cachedCard = null // memory may have changed across the transition → rebuild the scan card
         chipsKey = -1; cachedChips = emptyList()
-        questChipKey = -1; questChip = null
         navPoisKey = -1; navHintKey = Long.MIN_VALUE; gateHintKey = Long.MIN_VALUE // v2.176
         marketSold.clear(); traderSold.clear(); traderGreeted = false
         rebuildMemoryTones()
         syncAmbience() // v2.63: space ↔ surface swap the ambient loop
     }
-
 
     /** True when the player is standing on the surface escape pad (the return point). */
     internal fun playerOnEscapePad(): Boolean {
@@ -723,14 +610,13 @@ class GameScreen(
             (overlay == Overlay.NONE || overlay == Overlay.INVENTORY)
         ) {
             overlay = if (overlay == Overlay.INVENTORY) Overlay.NONE else Overlay.INVENTORY
-            readingLore = null
         }
         // v2.98 調整モード: the 調整 button (left of 持物) opens the knob popup.
         // v2.111: tuning rides the Overlay register (like 持物) — the popup owns the screen,
         // and every overlay-aware guard (touch buttons, HUD chips, taps) excludes it for free.
-        if (input.tune && io.github.panda17tk.arpg.save.TuneMode.active && !challengeMode && !choosing && !gw.gameOver.isOver &&
+        if (input.tune && io.github.panda17tk.arpg.save.TuneMode.active && !choosing && !gw.gameOver.isOver &&
             !layoutEditing && endingStage == 0 && (overlay == Overlay.NONE || overlay == Overlay.TUNING)
-        ) { // v2.106 公正化: the proving run takes no knobs
+        ) { // v2.106 公正化: the knobs stay behind the title's passcode door (v2.98 TuneMode)
             overlay = if (overlay == Overlay.TUNING) Overlay.NONE else Overlay.TUNING
             if (overlay == Overlay.TUNING) {
                 tuneParams = io.github.panda17tk.arpg.config.TuningCatalog.paramsFor(configStore.config)
@@ -802,8 +688,7 @@ class GameScreen(
                 floor((camX + vhw) / Tuning.TILE).toInt(), floor((camY + vhh) / Tuning.TILE).toInt(),
             )
         }
-        // The return-visit greeting fades after a few seconds, then the surface objective reverts to normal.
-        if (rememberedT > 0f && !paused) { rememberedT -= simDelta; if (rememberedT <= 0f) gw.worldState.rememberedPlanet = false }
+        // The remembered-planet record fades after a few seconds, then the surface objective reverts to normal.
         if (rewardToastT > 0f && !paused) { rewardToastT -= simDelta; if (rewardToastT <= 0f) rewardToast = null }
         // v2.45: the sim leaves one-shot announcements (event waves, boss telegraph, bounty kill)
         // on the WaveState; the screen turns them into the same toast the send-off gift uses.
@@ -811,43 +696,22 @@ class GameScreen(
             eventBanner.start(it) // v2.86: the moment lines ride the cinematic band, not a toast
             gw.waveState.announce = null
             Sfx.play("banner") // v2.89: the band has its own stinger
-            if (it.contains("賞金首を討ち取った") && !simMode) tryUnlock(Achievement.BOUNTY_HUNTER) // v2.62
         }
-        // v2.62 実績: surviving deep into the desync (the real run only).
-        if (!paused && !simMode && gw.waveState.num >= 15) tryUnlock(Achievement.DEEP_SURGE)
-        // v2.92 実績: the sim counts feats; the screen turns counts into unlocks.
-        if (!paused && !simMode) {
-            if (gw.gameOver.rogueKills > 0) tryUnlock(Achievement.ROGUE_SLAYER)
-            if (gw.gameOver.rageKills > 0) tryUnlock(Achievement.RAGE_BREAKER)
-            if (gw.gameOver.grandKills > 0) tryUnlock(Achievement.GRAND_RITUAL)
-            if (gw.fx.comboStep >= io.github.panda17tk.arpg.combat.MeleeCombo.MAX_STEP) tryUnlock(Achievement.COMBO_MASTER)
-            if (with(gw.world) { gw.player[Materials].shards } >= gateNeed()) tryUnlock(Achievement.GATE_READY)
-            // surviving a meteor wave: the wave number moved on while the sky was falling
-            if (gw.waveState.num > prevWaveNum && prevWaveEvent == WaveEvent.METEOR && !gw.gameOver.isOver) {
-                tryUnlock(Achievement.METEOR_SURVIVOR)
-            }
-            prevWaveNum = gw.waveState.num
-            prevWaveEvent = gw.waveState.event
-        }
-        // v2.70 実績: a real hoard of memory fragments, held all at once.
-        if (!paused && !simMode && with(gw.world) { gw.player[Materials].dust } >= 500) {
-            tryUnlock(Achievement.DUST_RICH)
-        }
-        // v2.51: a wreck the drifter closes in on broadcasts its distress log — once per wreck.
-        // v2.66 世界観ヒント OFF leaves the log unread (and unmarked, so it can speak later).
-        if (!paused && !simMode && loreHints && gw.worldState.mode == WorldMode.SPACE) {
+        // v2.51: each wreck the drifter closes in on is marked once per sky so the cache
+        // notice does not repeat while the drifter circles it.
+        if (!paused && !simMode && gw.worldState.mode == WorldMode.SPACE) {
             val (wpx, wpy) = with(gw.world) { val t = gw.player[Transform]; t.x to t.y }
             gw.worldState.wrecks.forEachIndexed { i, w ->
-                if (i !in gw.worldState.wreckLogShown && hypot(wpx - w.first, wpy - w.second) < Tuning.TILE * 3f) {
-                    gw.worldState.wreckLogShown.add(i)
-                    rewardToast = WreckLog.lineFor(worldSeed, i)
+                if (i !in gw.worldState.wreckSeen && hypot(wpx - w.first, wpy - w.second) < Tuning.TILE * 3f) {
+                    gw.worldState.wreckSeen.add(i)
+                    rewardToast = "残骸　${w.first.toInt()} ${w.second.toInt()}"
                     rewardToastT = TOAST_TIME
                     Sfx.play("scan")
                 }
             }
         }
         // v2.166 宙域の九分割: reaching the slice's edge crosses into the neighbouring sky.
-        // The training sim and the proving run stay walled (simMode), whatever slice they use.
+        // The training sim stays walled (simMode), whatever slice it happens to sit in.
         if (!paused && !simMode && !fade.blocksInput && gw.worldState.mode == WorldMode.SPACE && gw.worldState.areaX >= 0 && endingStage == 0) { // v2.169: no crossing mid-fade
             val (apx, apy) = with(gw.world) { val t = gw.player[Transform]; t.x to t.y }
             val mw = gw.map.width * Tuning.TILE; val mh = gw.map.height * Tuning.TILE
@@ -896,7 +760,7 @@ class GameScreen(
                 }
             }
         }
-        // v2.110 生存者救助: one wreck may shelter a survivor — drawing close IS the rescue.
+        // v2.110: one wreck may shelter a survivor — drawing close rescues it (once per run).
         if (!paused && !simMode && gw.worldState.mode == WorldMode.SPACE &&
             gw.worldState.survivorWreck >= 0 && !gw.worldState.survivorRescued
         ) {
@@ -906,13 +770,12 @@ class GameScreen(
                     gw.worldState.survivorRescued = true
                     session.survivorRescued = true // v2.169: the rescue holds across rebuilds
                     with(gw.world) { gw.player[Materials].dust += 40 }
-                    eventBanner.start("漂流者を救助した — 礼にと星屑40を分けてくれた")
+                    eventBanner.start("生存者　救助　星屑+40")
                     Sfx.play("levelup")
-                    tryUnlock(Achievement.LIFELINE)
                 }
             }
         }
-        // v2.184 濃い外縁III 沈黙の玉座: the far corner's hoard — reaching it IS the claim (once per run).
+        // v2.184: the far corner holds a one-time hoard — reaching it claims it (once per run).
         if (!paused && !simMode && gw.worldState.mode == WorldMode.SPACE &&
             gw.worldState.throne != null && !gw.worldState.throneClaimed
         ) {
@@ -922,15 +785,12 @@ class GameScreen(
                     gw.worldState.throneClaimed = true
                     session.throneClaimed = true // the claim holds across rebuilds and saves
                     with(gw.world) { gw.player[Materials].dust += 200 }
-                    eventBanner.start("沈黙の玉座に到達した — 星屑200が積まれていた")
+                    eventBanner.start("玉座　星屑+200")
                     Sfx.play("levelup")
                 }
             }
         }
-        // v2.48 惑星サーバー: standing before the memory core makes it speak — once per landing,
-        // into the surface event feed (the same channel the society's memory already uses).
-        // v2.155 結末への道: the visit needs a fresh APPROACH — walking away re-arms it, so a
-        // keeper parked on the core cannot auto-settle a second CORE request in the same chain.
+        // v2.48: reaching the memory core records the visit once per landing; walking away re-arms it.
         if (!paused && gw.worldState.mode == WorldMode.SURFACE) {
             gw.worldState.memoryCore?.let { core ->
                 val (cpx, cpy) = with(gw.world) { val t = gw.player[Transform]; t.x to t.y }
@@ -938,62 +798,11 @@ class GameScreen(
                     gw.worldState.coreArmed = true
                     return@let
                 }
-                if (gw.worldState.coreArmed && (!gw.worldState.coreVisited || !gw.worldState.coreLogShown)) {
+                if (gw.worldState.coreArmed && !gw.worldState.coreVisited) {
                     gw.worldState.coreArmed = false
-                    gw.worldState.coreVisited = true // v2.68: the CORE quest counts the visit itself
-                    if (!loreHints || gw.worldState.coreLogShown) return@let
-                    gw.worldState.coreLogShown = true
-                    gw.worldState.recentEvents.add(
-                        PlanetEvent(
-                            MemoryCoreLog.lineFor(session.landedPlanetId ?: 0L, gw.worldState.biome, session.spaceSeed.toInt()),
-                            EventKind.NEUTRAL,
-                        ),
-                    )
+                    gw.worldState.coreVisited = true // one record per visit; leaving the pad re-arms it
+                    gw.worldState.recentEvents.add(PlanetEvent("記憶コア　到達", EventKind.NEUTRAL))
                     Sfx.play("scan")
-                }
-            }
-        }
-        // v2.72 依頼の連鎖: a fulfilled request settles ON THE SPOT — the star pays, thanks you
-        // through the event feed, and (up to 3 times a visit) hands over the next thing it needs.
-        // A star whose child you killed stops asking, the same rule as the send-off gift.
-        if (!paused && !simMode && gw.worldState.mode == WorldMode.SURFACE) {
-            val ws = gw.worldState
-            val pid = session.landedPlanetId
-            val qb = ws.biome
-            if (pid != null && qb != null && ws.questStage < PlanetQuest.CHAIN && !ws.society.childKilled) {
-                val q = PlanetQuest.questFor(pid, qb, ws.questStage)
-                if (questProgress(q.kind, ws) >= q.target) {
-                    val pay = io.github.panda17tk.arpg.planet.WeatherQuest.rewardFor(q, ws.weather) // v2.109 天候×依頼
-                    with(gw.world) { gw.player[Materials].dust += pay }
-                    ws.questStage++
-                    ws.snapshotQuestBases() // v2.150: one seam — bases + the CORE visit flag
-                    questChipKey = -1 // the chip rebuilds for the next request
-                    ws.recentEvents.add(
-                        PlanetEvent(
-                            if (ws.questStage < PlanetQuest.CHAIN) "依頼を果たした +${pay}屑 — 次の頼みが届いた"
-                            else "依頼を果たした +${pay}屑 — この星の頼みはすべて済んだ",
-                            EventKind.MERCY,
-                        ),
-                    )
-                    // v2.87 星の答え: a column of light + gold rain over the keeper, and the band tells it.
-                    with(gw.world) {
-                        val pt2 = gw.player[Transform]
-                        gw.fx.spawnPillar(pt2.x, pt2.y)
-                        gw.fx.spawnSparks(pt2.x, pt2.y - 10f, 16, cQuestGold)
-                        gw.fx.spawnSparks(pt2.x, pt2.y - 10f, 10, cQuestPale)
-                    }
-                    eventBanner.start(
-                        if (ws.questStage < PlanetQuest.CHAIN) "星が応えた — 次の頼みが届いた"
-                        else "星が応えた — この星の頼みはすべて済んだ",
-                    )
-                    Sfx.play("levelup")
-                    tryUnlock(Achievement.QUEST_PATRON)
-                    if (ws.questStage >= PlanetQuest.CHAIN) tryUnlock(Achievement.CHAIN_PATRON) // v2.75
-                    when (q.kind) { // v2.70: the quiet professions get their own lines
-                        QuestKind.PROTECT -> tryUnlock(Achievement.GUARDIAN)
-                        QuestKind.OBSERVE -> tryUnlock(Achievement.OBSERVER)
-                        else -> {}
-                    }
                 }
             }
         }
@@ -1017,7 +826,6 @@ class GameScreen(
                 if (hypot(px - vx2, py - vy2) < Tuning.TILE * 2f) {
                     gw.worldState.vaultEntered = true
                     gw.worldState.recentEvents.add(PlanetEvent("封じられた遺構に踏み入った", EventKind.NEUTRAL))
-                    if (!simMode) tryUnlock(Achievement.VAULT_DELVER)
                     Sfx.play("scan")
                 }
             }
@@ -1103,18 +911,6 @@ class GameScreen(
         batch.end()
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Step the fixed-timestep sim, or freeze it for game over / pause / the upgrade modal.
      * Returns false when a game-over restart rebuilt the run (the frame should not be drawn).
@@ -1123,23 +919,6 @@ class GameScreen(
         if (gw.gameOver.isOver) {
             accumulator = 0f
             if (!prevOver) {
-                // v2.53: a death inside the simulation is a simulated death — no REAL records.
-                // v2.62: but the training hall keeps its own scoreboard.
-                // v2.102: and the proving run keeps a third, wiped when the week's sky turns.
-                newBest = when {
-                    challengeMode -> {
-                        // v2.180 記録コード: the result rides the clipboard — paste it anywhere
-                        // (a chat, a note) to compare skies with anyone on the same code.
-                        val code = if (dailyChallenge) Challenge.codeForDay(challengeWeek) else Challenge.codeFor(challengeWeek)
-                        try { Gdx.app.clipboard.contents = Challenge.resultCode(code, gw.waveState.num, gw.gameOver.kills) } catch (_: Throwable) { /* headless */ }
-                        if (dailyChallenge) Scores.recordDaily(challengeWeek, gw.waveState.num, gw.gameOver.kills)
-                        else Scores.recordChallenge(challengeWeek, gw.waveState.num, gw.gameOver.kills)
-                    }
-                    simMode -> Scores.recordSim(gw.waveState.num, gw.gameOver.kills)
-                    else -> Scores.record(gw.waveState.num, gw.gameOver.kills)
-                }
-                foldBestiary() // v2.113 図鑑
-                if (!simMode) io.github.panda17tk.arpg.save.Stats.addDeath() // v2.123
                 session.persist() // LP v2.28: a death checkpoints the universe's memory too
                 if (!simMode) runStore.clear() // v2.33: death consumes the saved run (roguelite)
                 // v2.46 遺品: death leaves half the dust and every gate shard where you fell —
@@ -1150,25 +929,20 @@ class GameScreen(
                         DeathRelic.of(t.x, t.y, m.dust, m.shards, gw.worldState.mode == WorldMode.SPACE)
                     }
                     if (relic != null) relicStore.save(relic) else relicStore.clear()
-                    // v2.90 工房: a fraction of the carried fragments reaches the workshop ledger.
-                    val carried = with(gw.world) { gw.player[Materials].dust }
-                    io.github.panda17tk.arpg.save.Workshop.deposit(io.github.panda17tk.arpg.save.WorkshopCatalog.salvage(carried))
                 }
                 Sfx.play("dead"); Haptics.buzz(140)
             }
             val goHit = if (tapped) {
                 Modals.hitModal(Modals.gameOverButtons(hudViewport.worldWidth, hudViewport.worldHeight), tapX, tapY)
             } else null
-            // v2.102: a challenge retry rebuilds the SAME weekly sky; everything else starts over.
             if (Gdx.input.isKeyJustPressed(Input.Keys.R) || goHit == 0) {
-                if (challengeMode) enterChallenge() else newRun()
+                newRun()
                 return false
             }
             if (goHit == 1) { (Gdx.app.applicationListener as? App)?.showTitle(); return false } // v2.59
         } else if (paused) {
             accumulator = 0f // freeze the sim while paused; skip stepping & the upgrade flow
         } else {
-            if (!simMode) io.github.panda17tk.arpg.save.Stats.tick(delta) // v2.123 勤続時計
             updateUpgradeFlow(delta)
             trackPlayerHitShake()
         }
@@ -1197,18 +971,8 @@ class GameScreen(
         eventBanner.update(delta) // v2.86
         animTime += delta
         if (!gw.gameOver.isOver && !choosing && !paused) runTime += delta
-        // v2.69 観測依頼: surface time only ticks while actually playing the surface.
-        if (!gw.gameOver.isOver && !choosing && !paused && gw.worldState.mode == WorldMode.SURFACE) {
-            gw.worldState.questTime += delta
-        }
         return true
     }
-
-
-
-
-
-
 
     internal fun trackPlayerHitShake() {
         val hp = with(gw.world) { gw.player[Health].hp }
@@ -1257,9 +1021,6 @@ class GameScreen(
         Sfx.play("levelup")
     }
 
-
-
-
     /** v2.44: the player is close enough to the gate ring to enter it. */
     internal fun nearGate(): Boolean {
         val g = gw.worldState.gate ?: return false
@@ -1284,19 +1045,9 @@ class GameScreen(
      */
     internal fun performJump() {
         pendingJump = false
-        var remitted = 0
         with(gw.world) {
             val m = gw.player[Materials]
             m.shards = (m.shards - gateNeed()).coerceAtLeast(0)
-            // v2.154 星屑の送金: the jump wires 30% of carried dust to the workshop — surviving
-            // and pressing on now banks more than the 15% death salvage ever did.
-            if (!simMode) {
-                remitted = io.github.panda17tk.arpg.save.WorkshopCatalog.remit(m.dust)
-                if (remitted > 0) {
-                    m.dust -= remitted
-                    io.github.panda17tk.arpg.save.Workshop.deposit(remitted)
-                }
-            }
         }
         session.spaceSeed += 1
         session.surfSeed = session.spaceSeed * 100
@@ -1309,17 +1060,11 @@ class GameScreen(
         endingSeenThisWorld = false // v2.93: a new sky may ask the question again
         transitionWorld(WorldMode.SPACE, null, session.spaceSeed, null)
         with(gw.world) { val h = gw.player[Health]; h.hp = h.hpMax } // the jump mends the hull
-        tryUnlock(Achievement.FIRST_JUMP) // v2.62
-        if (syncPercent() >= 50) tryUnlock(Achievement.SYNC_50)
-        if (syncPercent() >= 90) tryUnlock(Achievement.SYNC_90) // v2.68
-        if (session.spaceSeed >= 3) tryUnlock(Achievement.SYSTEM_3) // v2.70
-        rewardToast = "第${session.spaceSeed}星系に到達した" +
-            (if (remitted > 0) "　工房へ送金 +${remitted}屑" else "")
+        rewardToast = "星系 #${session.spaceSeed}に到達した"
         rewardToastT = TOAST_TIME
-        // v2.91 星系の個性: the new sky introduces itself on the banner.
+        // v2.91 星系の個性: the new sky announces its temperament by name.
         gw.worldState.trait.takeIf { it != SystemTrait.NONE }?.let {
-            eventBanner.start(it.line)
-            tryUnlock(Achievement.TRAIT_ARRIVAL) // v2.92
+            eventBanner.start(it.label)
         }
         Sfx.play("takeoff")
     }
@@ -1327,41 +1072,7 @@ class GameScreen(
     /** Whether the pause carries the 4th 「この星の記憶」 entry (surface only — LP v2.25). */
     internal fun pauseHasMemory(): Boolean = gw.worldState.mode == WorldMode.SURFACE
 
-
-
-
     /** The inventory overlay's view model → Hud.inventory (v2.33). */
-
-
-    /** v2.62 実績: unlock + one-line toast the first time only. */
-    /** v2.117 図鑑: fold the current world's tallies at a seam (real runs only) and mark
-     *  the record achievements. Every world-discarding path calls this exactly once. */
-    internal fun foldBestiary() {
-        if (simMode) return
-        io.github.panda17tk.arpg.save.Bestiary.record(gw.gameOver.killsByKind)
-        io.github.panda17tk.arpg.save.Stats.fold(
-            gw.gameOver.killsByKind, // v2.123 勤続記録: same seam (v2.150: wildlife stays out of the tally)
-            configStore.config.enemies.filterValues { it.lifeKind == io.github.panda17tk.arpg.config.LifeKind.WILDLIFE }.keys,
-        )
-        gw.gameOver.killsByKind.clear() // a seam folds once — a second pass finds nothing
-        val known = io.github.panda17tk.arpg.save.Bestiary.knownCount()
-        if (known >= 50) tryUnlock(Achievement.BESTIARY_50)
-        // v2.158 図鑑の二段: the combat book (every non-wildlife kind) is the milestone most
-        // keepers can actually close; BESTIARY_FULL stays as the long-tail crown.
-        val combatIds = configStore.config.enemies.filterValues { it.lifeKind != io.github.panda17tk.arpg.config.LifeKind.WILDLIFE }.keys
-        if (io.github.panda17tk.arpg.save.Bestiary.knownAmong(combatIds) >= combatIds.size) tryUnlock(Achievement.BESTIARY_COMBAT)
-        // v2.147: the full-book unlock never demands a child's death (獣の子 stays out of the count)
-        val bookTarget = configStore.config.enemies.values.count { it.familyRole != io.github.panda17tk.arpg.config.FamilyRole.CHILD }
-        if (known >= bookTarget) tryUnlock(Achievement.BESTIARY_FULL)
-    }
-
-    internal fun tryUnlock(a: Achievement) {
-        if (Achievements.unlock(a)) {
-            rewardToast = "実績解除『${a.title}』 — ${a.desc}"
-            rewardToastT = TOAST_TIME
-            Sfx.play("levelup")
-        }
-    }
 
     /** v2.60: same ending either way — the reward never depends on finishing vs skipping. */
     internal fun finishTutorial() {
@@ -1379,17 +1090,6 @@ class GameScreen(
         tutorial = null
         Sfx.play("levelup")
     }
-
-
-
-
-
-
-
-
-
-
-
 
     /** v2.33 SAVE tab: snapshot the run (world identity + player state + gear) and persist it. */
     internal fun saveRun() {
@@ -1440,10 +1140,9 @@ class GameScreen(
 
     /** v2.174 命綱: Android may kill a backgrounded app at any moment — without this, the run
      *  rolled back to the last MANUAL save (or vanished). The training sim leaves no trace by
-     *  design and the proving run rebuilds from its weekly seed, so only a live real run
-     *  checkpoints here. */
+     *  design, so only a live real run checkpoints here. */
     override fun pause() {
-        if (::gw.isInitialized && !simMode && !challengeMode && !closing &&
+        if (::gw.isInitialized && !simMode && !closing &&
             !gw.gameOver.isOver && endingStage == 0
         ) saveRunQuiet()
     }
@@ -1519,7 +1218,7 @@ class GameScreen(
             dto.backpack.mapNotNullTo(gear.backpack) { ItemCatalog.byId(it) }
         }
         accumulator = 0f; camInit = false; choosing = false; offered = false; choices = emptyList()
-        overlay = Overlay.NONE; lastHp = Float.NaN; lastKills = 0; prevOver = false; newBest = false
+        overlay = Overlay.NONE; lastHp = Float.NaN; lastKills = 0; prevOver = false
         lastCardId = null; cachedCard = null; chipsKey = -1; cachedChips = emptyList()
         marketSold.clear(); traderSold.clear(); traderGreeted = false
         rebuildMemoryTones()

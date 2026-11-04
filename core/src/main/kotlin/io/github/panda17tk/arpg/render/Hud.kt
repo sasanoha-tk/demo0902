@@ -507,7 +507,6 @@ object Hud {
         itemLines: List<String>,   // ITEMS tab rows (already formatted, aligned with itemRows)
         visited: VisitedMap?, playerTx: Int, playerTy: Int, // MAP tab
         note: String?,             // brief flash on ITEMS/SAVE (「セーブした」, a consumable's effect…)
-        loreTitle: String? = null, loreLines: List<String> = emptyList(), // v2.34: the open readable
         controlLabel: String? = null, // v2.39: EQUIP tab's control-swap toggle caption
         marketLines: List<String> = emptyList(), // v2.43: MARKET rows (already priced/formatted)
         marketFooter: String? = null,            // v2.43: dust balance or the closed-stall notice
@@ -568,28 +567,14 @@ object Hud {
                 }
             }
             InvTab.ITEMS -> {
-                if (loreTitle != null) {
-                    // Reading view (v2.34): the open readable's title + its text, tap anywhere to return.
-                    fitCenterLabel(batch, titleFont, loreTitle, w / 2f, body.y + body.h - 20f, body.w - 8f)
-                    var y = body.y + body.h - 52f
-                    for (line in loreLines) {
-                        fitText(batch, font, line, body.x + 12f, y, body.w - 24f)
-                        y -= 24f
-                        if (y < body.y + 34f) break
-                    }
-                    font.color = cHint
-                    centerText(batch, font, "タップで戻る", w, body.y + 16f)
-                    font.color = Color.WHITE
-                } else {
-                    val rows = InventoryLayout.itemRows(w, h, itemLines.size)
-                    rows.forEachIndexed { i, r -> fitText(batch, font, itemLines[i], r.x + 12f, r.y + 18f, r.w - 24f) }
-                    if (itemLines.isEmpty()) {
-                        font.color = cHint; font.draw(batch, "持物は空", body.x + 12f, body.y + body.h - 10f); font.color = Color.WHITE
-                    }
-                    font.color = cHint
-                    fitCenterLabel(batch, font, note ?: "タップで使う / 読む", w / 2f, body.y + 20f, body.w - 8f)
-                    font.color = Color.WHITE
+                val rows = InventoryLayout.itemRows(w, h, itemLines.size)
+                rows.forEachIndexed { i, r -> fitText(batch, font, itemLines[i], r.x + 12f, r.y + 18f, r.w - 24f) }
+                if (itemLines.isEmpty()) {
+                    font.color = cHint; font.draw(batch, "持物は空", body.x + 12f, body.y + body.h - 10f); font.color = Color.WHITE
                 }
+                font.color = cHint
+                fitCenterLabel(batch, font, note ?: "タップで使う / 合成", w / 2f, body.y + 20f, body.w - 8f)
+                font.color = Color.WHITE
             }
             InvTab.MAP -> {
                 font.color = cHint

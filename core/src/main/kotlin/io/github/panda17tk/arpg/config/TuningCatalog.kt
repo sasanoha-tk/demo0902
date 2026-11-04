@@ -164,8 +164,8 @@ object TuningCatalog {
 object TuningExport {
     fun render(title: String, params: List<TuneParam>): String = buildString {
         appendLine("# $title")
-        appendLine("# 形式: 項目 = 現在値 (基準 既定値)   ※基準から変更した行の先頭に *")
-        appendLine("# このファイルを Claude に渡すと、変更点(*)を読み取ってゲーム調整に反映できます")
+        appendLine("# Format: knob = current value (baseline default). A drifted line starts with *")
+        appendLine("# Hand this file to Claude: it reads the changed lines (*) and applies the tuning")
         val changed = params.count { it.changed() }
         appendLine("# 変更 $changed / ${params.size} 項目")
         appendLine()

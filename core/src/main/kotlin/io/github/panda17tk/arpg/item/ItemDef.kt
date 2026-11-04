@@ -4,7 +4,7 @@ package io.github.panda17tk.arpg.item
 enum class EquipSlot { THRUSTER, ARMOR, RANGED, MELEE, ACC1, ACC2, ACC3 }
 
 /** What an item IS — which slot family it can occupy. CONSUMABLE is used from the ITEMS tab;
- *  LORE (読み物 — v2.34) is a readable that deepens the world and is never equipped or spent. */
+ *  LORE (資料品) is never equipped and never used: it sells for 星屑 at the 行商船's 買い取り. */
 enum class ItemKind { THRUSTER, ARMOR, RANGED_WEAPON, MELEE_WEAPON, ACCESSORY, CONSUMABLE, LORE }
 
 /** Thruster classes: OC (overclocked) thrusters unlock the full-throttle mode. */
@@ -69,8 +69,6 @@ data class ItemDef(
     // Special effects (v2.35): on/off traits + passive HP regeneration per second while equipped
     val traits: Set<ItemTrait> = emptySet(),
     val hpRegen: Float = 0f,
-    // LORE (v2.34): the readable text — newline-separated lines shown in the inventory's reading view
-    val lore: String = "",
     // v2.186 NG+質的アンロック: hidden from every drop/shop pool — reaches play only via the
     // cleared account's starting pack (Endings.clears≥1). Still resolvable by id for save/carry.
     val ngPlusOnly: Boolean = false,

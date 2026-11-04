@@ -56,28 +56,20 @@ import io.github.panda17tk.arpg.input.TouchButton
 import io.github.panda17tk.arpg.input.TouchControls
 import io.github.panda17tk.arpg.math.Rng
 import io.github.panda17tk.arpg.planet.PlanetBiome
-import io.github.panda17tk.arpg.planet.PlanetQuest
-import io.github.panda17tk.arpg.planet.QuestKind
 import io.github.panda17tk.arpg.render.Fonts
 import io.github.panda17tk.arpg.render.Hud
 import io.github.panda17tk.arpg.render.PlayerPose
 import io.github.panda17tk.arpg.render.SceneRenderer
 import io.github.panda17tk.arpg.render.TouchOverlay
-import io.github.panda17tk.arpg.save.Achievement
-import io.github.panda17tk.arpg.save.Achievements
-import io.github.panda17tk.arpg.save.Challenge
 import io.github.panda17tk.arpg.save.DeathRelic
 import io.github.panda17tk.arpg.save.PlanetMemoryCodec
 import io.github.panda17tk.arpg.save.PreferencesMemoryStore
 import io.github.panda17tk.arpg.save.PreferencesRelicStore
 import io.github.panda17tk.arpg.save.PreferencesRunSaveStore
 import io.github.panda17tk.arpg.save.RunSaveDto
-import io.github.panda17tk.arpg.save.Scores
 import io.github.panda17tk.arpg.sim.DesyncGauge
 import io.github.panda17tk.arpg.sim.Drift
-import io.github.panda17tk.arpg.sim.Epithet
 import io.github.panda17tk.arpg.sim.EventKind
-import io.github.panda17tk.arpg.sim.MemoryCoreLog
 import io.github.panda17tk.arpg.sim.PlanetCardInfo
 import io.github.panda17tk.arpg.sim.PlanetEvent
 import io.github.panda17tk.arpg.sim.PlanetContext
@@ -85,7 +77,6 @@ import io.github.panda17tk.arpg.sim.PlanetLexicon
 import io.github.panda17tk.arpg.sim.PlanetScan
 import io.github.panda17tk.arpg.sim.PlanetSocietyState
 import io.github.panda17tk.arpg.sim.RunSession
-import io.github.panda17tk.arpg.sim.SocietyMemorySummary
 import io.github.panda17tk.arpg.sim.ReturnVisitEffects
 import io.github.panda17tk.arpg.sim.RewardBundle
 import io.github.panda17tk.arpg.sim.SurfaceGoals
@@ -102,11 +93,9 @@ import io.github.panda17tk.arpg.sim.WorldMode
 import io.github.panda17tk.arpg.sim.WorldState
 import io.github.panda17tk.arpg.sim.Weather
 import io.github.panda17tk.arpg.sim.WeatherKind
-import io.github.panda17tk.arpg.sim.WreckLog
 import io.github.panda17tk.arpg.ui.HudLayout
 import io.github.panda17tk.arpg.ui.InvTab
 import io.github.panda17tk.arpg.ui.InventoryLayout
-import io.github.panda17tk.arpg.ui.Logbook
 import io.github.panda17tk.arpg.ui.Modals
 import io.github.panda17tk.arpg.ui.Onboarding
 import io.github.panda17tk.arpg.ui.Overlay
@@ -241,12 +230,14 @@ internal fun GameScreen.exportTuning() {
         Sfx.play(if (written != null) "levelup" else "hit")
     }
 
-/** v2.93 エンディング: dim + the dialogue pages / choice / epilogue, glass style. */
+/** v2.93 エンディング: dim + the summary pages / choice buttons / close lines, glass style. */
 internal fun GameScreen.drawEnding() {
         if (endingStage <= 0) return
         hudViewport.apply()
         val w = hudViewport.worldWidth; val h = hudViewport.worldHeight
-        val pages = io.github.panda17tk.arpg.sim.Endgame.PAGES
+        val dust = with(gw.world) { gw.player[Materials].dust } // the same 星屑 slot the HUD reads
+        val pages = io.github.panda17tk.arpg.sim.Endgame.pages(
+            gw.waveState.num, dust, syncPercent(), io.github.panda17tk.arpg.save.Endings.clears)
         val gentle = io.github.panda17tk.arpg.sim.Endgame.gentlePathOpen(session.memory.memories.values) // v2.185 第3の結末
         val blood = io.github.panda17tk.arpg.sim.Endgame.bloodPathOpen(session.memory.memories.values) // v2.189 もう一つの結末
         Gdx.gl.glEnable(com.badlogic.gdx.graphics.GL20.GL_BLEND)
@@ -298,44 +289,40 @@ internal fun GameScreen.drawEnding() {
         batch.end()
     }
 
-/** v2.93: taps drive the final dialogue — pages, the choice, then the closing of the record. */
+/** v2.93: taps drive the closing screens — pages, the choice, then the title. */
 internal fun GameScreen.handleEndingTaps() {
         if (!tapped) return
-        val pages = io.github.panda17tk.arpg.sim.Endgame.PAGES
+        val dust = with(gw.world) { gw.player[Materials].dust } // the same 星屑 slot the HUD reads
+        val pages = io.github.panda17tk.arpg.sim.Endgame.pages(
+            gw.waveState.num, dust, syncPercent(), io.github.panda17tk.arpg.save.Endings.clears)
         when {
             endingStage in 1..pages.size -> { endingStage++; Sfx.play("scan") }
             endingStage == pages.size + 1 -> {
                 val gentle = io.github.panda17tk.arpg.sim.Endgame.gentlePathOpen(session.memory.memories.values) // v2.185
                 val blood = io.github.panda17tk.arpg.sim.Endgame.bloodPathOpen(session.memory.memories.values) // v2.189
                 val hit = Modals.hitModal(Modals.endingButtons(hudViewport.worldWidth, hudViewport.worldHeight, gentle, blood), tapX, tapY)
-                if (hit == 0) { // 眠りにつく — the record closes
-                    tryUnlock(Achievement.FINAL_SYNC)
-                    io.github.panda17tk.arpg.save.Endings.recordClear()
-                    endingEpilogue = io.github.panda17tk.arpg.sim.Endgame.EPILOGUE // v2.185: the sleeping close
-                    endingStage = pages.size + 2
-                    Sfx.play("levelup")
-                } else if (hit == 1) { // 漂流を続ける — the sky lets go
-                    tryUnlock(Achievement.DRIFT_ON)
-                    endingStage = 0
-                    endingSeenThisWorld = true
-                    gw.worldState.controlCore = null
-                    eventBanner.start(io.github.panda17tk.arpg.sim.Endgame.DRIFT_LINE)
-                    Sfx.play("scan")
-                } else if (hit == 2) { // the earned third door — gentle (v2.185) or its dark mirror (v2.189)
-                    if (gentle) {
-                        tryUnlock(Achievement.AWAKENED_DAWN)
-                        endingEpilogue = io.github.panda17tk.arpg.sim.Endgame.EPILOGUE_UNBIND
-                    } else {
-                        tryUnlock(Achievement.STAR_EATER) // v2.189 もう一つの結末
-                        endingEpilogue = io.github.panda17tk.arpg.sim.Endgame.EPILOGUE_RECKON
+                val close = if (hit == 0) io.github.panda17tk.arpg.sim.Endgame.CHOICE_SLEEP
+                    else if (hit == 2) if (gentle) io.github.panda17tk.arpg.sim.Endgame.CHOICE_UNBIND
+                        else io.github.panda17tk.arpg.sim.Endgame.CHOICE_RECKON
+                    else null // 切断 handled below; a tap between the buttons does nothing
+                when {
+                    close != null -> { // the chosen close: the clear is counted, then the summary
+                        io.github.panda17tk.arpg.save.Endings.recordClear()
+                        endingEpilogue = io.github.panda17tk.arpg.sim.Endgame.epilogue(
+                            close, gw.waveState.num, dust, io.github.panda17tk.arpg.save.Endings.clears)
+                        endingStage = pages.size + 2
+                        Sfx.play("levelup")
                     }
-                    io.github.panda17tk.arpg.save.Endings.recordClear()
-                    endingStage = pages.size + 2
-                    Sfx.play("levelup")
+                    hit == 1 -> { // 切断: the sky lets go and this run keeps flying
+                        endingStage = 0
+                        endingSeenThisWorld = true
+                        gw.worldState.controlCore = null
+                        eventBanner.start(io.github.panda17tk.arpg.sim.Endgame.DRIFT_LINE)
+                        Sfx.play("scan")
+                    }
                 }
             }
-            else -> { // the epilogue closes to the title; the finished run is consumed
-                foldBestiary() // v2.117: the final world's tallies close the book too
+            else -> { // the close taps out to the title; the finished run is consumed
                 runStore.clear()
                 closing = true // v2.168 安全な帰還: stop this frame before it draws disposed
                 (Gdx.app.applicationListener as? App)?.showTitle()
@@ -350,14 +337,13 @@ internal fun GameScreen.handlePauseTaps() {
         when (overlay) {
             Overlay.PAUSE -> {
                 val hasMemory = pauseHasMemory()
-                when (PauseFlow.action(Modals.hitModal(Modals.pauseButtons(w, h, hasMemory, simMode, challengeMode), tapX, tapY) ?: -1, hasMemory)) {
+                when (PauseFlow.action(Modals.hitModal(Modals.pauseButtons(w, h, hasMemory, simMode), tapX, tapY) ?: -1, hasMemory)) {
                     PauseAction.RESUME -> overlay = Overlay.NONE
-                    PauseAction.RESTART -> { if (challengeMode) enterChallenge() else newRun(); overlay = Overlay.NONE }
+                    PauseAction.RESTART -> { newRun(); overlay = Overlay.NONE }
                     PauseAction.HELP -> overlay = Overlay.HELP
                     PauseAction.MEMORY -> overlay = Overlay.MEMORY
                     PauseAction.SIM -> { toggleTraining(); overlay = Overlay.NONE } // v2.53
                     PauseAction.TITLE -> { // v2.58: auto-save the real run, then the front door
-                        foldBestiary() // v2.113
                         if (!simMode && !gw.gameOver.isOver) saveRun()
                         closing = true // v2.168 安全な帰還
                         (Gdx.app.applicationListener as? App)?.showTitle()
@@ -406,17 +392,17 @@ internal fun GameScreen.handlePauseTaps() {
         }
     }
 
-/** Route a tap inside the inventory overlay (v2.33): tabs, slot cycling, item use/read, save, close. */
+/** Route a tap inside the inventory overlay (v2.33): tabs, slot cycling, item use, save, close. */
 internal fun GameScreen.handleInventoryTap(w: Float, h: Float) {
         Modals.hitModal(InventoryLayout.tabs(w, h), tapX, tapY)?.let {
-            invTab = InvTab.entries[it]; readingLore = null; return
+            invTab = InvTab.entries[it]; return
         }
-        if (InventoryLayout.closeButton(w, h).contains(tapX, tapY)) { overlay = Overlay.NONE; readingLore = null; return }
+        if (InventoryLayout.closeButton(w, h).contains(tapX, tapY)) { overlay = Overlay.NONE; return }
         when (invTab) {
             InvTab.EQUIP -> {
             // v2.56: the layout-editor strip sits just above the control toggle.
                 if (InventoryLayout.layoutEditToggle(w, h).contains(tapX, tapY)) {
-                    layoutEditing = true; editTarget = null; overlay = Overlay.NONE; readingLore = null
+                    layoutEditing = true; editTarget = null; overlay = Overlay.NONE
                     return
                 }
                 if (InventoryLayout.controlToggle(w, h).contains(tapX, tapY)) { toggleControlSwap(); return }
@@ -433,9 +419,8 @@ internal fun GameScreen.handleInventoryTap(w: Float, h: Float) {
         }
     }
 
-/** ITEMS tab tap (v2.34): reading → back; a consumable row → use one; a lore row → open it. */
+/** ITEMS tab tap (v2.34): a consumable row → use one; a stacked weapon row → craft. */
 internal fun GameScreen.handleItemsTap(w: Float, h: Float) {
-        if (readingLore != null) { readingLore = null; return } // any tap closes the reading view
         val gear = with(gw.world) { gw.player[Gear] }
         val groups = ItemCatalog.grouped(gear.backpack)
         val idx = Modals.hitModal(InventoryLayout.itemRows(w, h, groups.size), tapX, tapY) ?: return
@@ -447,7 +432,7 @@ internal fun GameScreen.handleItemsTap(w: Float, h: Float) {
                 if (at >= 0) gear.backpack.removeAt(at)
                 invNote = note; invNoteT = SAVED_NOTE_TIME
             }
-            ItemKind.LORE -> readingLore = item
+            ItemKind.LORE -> {} // 資料品: taps do nothing — it sells at the 行商船's 買い取り
         // v2.47 合成: tapping a stacked weapon row (×2以上) hones two copies into one "+1".
         // Other equipment swaps in from the EQUIP tab's slots, not from the list.
             ItemKind.RANGED_WEAPON, ItemKind.MELEE_WEAPON -> {
@@ -458,8 +443,6 @@ internal fun GameScreen.handleItemsTap(w: Float, h: Float) {
                     }
                     val up = GearCraft.honed(item)
                     gear.backpack.add(up)
-                    tryUnlock(Achievement.FIRST_HONE) // v2.62
-                    if (GearCraft.level(up.id) >= GearCraft.MAX_LEVEL) tryUnlock(Achievement.HONED_MAX) // v2.68
                     invNote = "合成: ${item.name} ×2 → ${up.name}"; invNoteT = SAVED_NOTE_TIME
                     Sfx.play("levelup")
                 }
@@ -481,20 +464,20 @@ internal fun GameScreen.handleMarketTap(w: Float, h: Float) {
         with(gw.world) {
             val mats = gw.player[Materials]
             if (mats.dust < price) {
-                invNote = "星屑が足りない（${'$'}price 必要）"; invNoteT = SAVED_NOTE_TIME
+                invNote = "星屑が足りない（${price} 必要）"; invNoteT = SAVED_NOTE_TIME
                 return
             }
             mats.dust -= price
             gw.player[Gear].backpack.add(item)
             marketSold.add(idx)
-            invNote = "${'$'}{item.name} を購入した（-${'$'}price屑）"; invNoteT = SAVED_NOTE_TIME
+            invNote = "${item.name} を購入した（-${price}屑）"; invNoteT = SAVED_NOTE_TIME
         }
     }
 
 /** v2.100 行商船: dim + the vessel's shelves (name left, price right) + 所持屑 + [離れる]. */
-/** v2.114 買い取り: the backpack's sellable items, with their original indices kept for removal. */
+/** v2.114 買い取り: every backpack item with its original index kept for removal (資料品 included). */
 internal fun GameScreen.sellables(): List<Pair<Int, io.github.panda17tk.arpg.item.ItemDef>> =
-    with(gw.world) { gw.player[Gear].backpack.withIndex().filter { Trader.sellable(it.value) }.map { it.index to it.value } }
+    with(gw.world) { gw.player[Gear].backpack.withIndex().map { it.index to it.value } }
 
 internal fun GameScreen.drawTraderShop() {
         hudViewport.apply()
@@ -602,7 +585,6 @@ internal fun GameScreen.handleTraderTap(w: Float, h: Float) {
             sellPage = sellPage.coerceAtMost(TraderPanel.sellPages(sellables().size) - 1).coerceAtLeast(0)
             traderNote = "${item.name} を売った（+${pay}屑）"; traderNoteT = SAVED_NOTE_TIME
             sellUndoItem = item; sellUndoPay = pay; sellUndoIdx = backpackIdx; sellUndoT = SELL_UNDO_TIME // v2.118
-            tryUnlock(Achievement.TRADE_LEDGER) // v2.117
             Sfx.play("pickup", 0.9f)
             return
         }
@@ -636,6 +618,5 @@ internal fun GameScreen.handleTraderTap(w: Float, h: Float) {
             traderSold.add(idx)
             traderNote = "${good.label} を購入した（-${price}屑）"; traderNoteT = SAVED_NOTE_TIME
             Sfx.play("levelup")
-            if (!simMode) tryUnlock(Achievement.TRADER_CLIENT)
         }
     }
