@@ -14,8 +14,6 @@ class RunSessionTest {
     @Test fun `a first visit is unknown and starts from an empty society`() {
         val plan = RunSession().planLanding(planet())
         assertFalse(plan.known)
-        assertNull(plan.greeting)
-        assertFalse(plan.showGreeting)
         assertEquals(0f, plan.society.hostility)
         assertFalse(plan.society.childKilled)
     }
@@ -30,8 +28,6 @@ class RunSessionTest {
         assertTrue(second.known)
         assertTrue(second.society.childKilled)
         assertEquals(0.7f, second.society.hostility)
-        assertEquals(SocietySpeechTrigger.ReturnVisitHostile, second.greeting)
-        assertTrue(second.showGreeting)
     }
 
     @Test fun `each landing advances the surface seed monotonically`() {

@@ -8,10 +8,10 @@ enum class TraderGoodKind { MED, AMMO, GEAR, SHARD }
 data class TraderGood(val kind: TraderGoodKind, val item: ItemDef?, val price: Int, val label: String)
 
 /**
- * 行商船 (v2.100): a friendly vessel adrift in some star systems — the void's answer to the
- * planet markets, and the run's mid-flight dust sink. Pure logic: the stock is deterministic
- * per system seed (3..4 slots — supplies, one random piece of gear, and at times a gate key
- * shard at a steep price), so a revisit under the same sky meets the same shelves.
+ * 行商船 (v2.100): a friendly vessel in some star systems — the space-side market and the run's
+ * mid-flight 星屑 sink. Pure logic: the stock is deterministic per system seed (3..4 slots —
+ * supplies, one random piece of gear, and at times a gate-key shard at a steep price), so a
+ * revisit under the same seed meets the same shelves.
  */
 object Trader {
     /** The system's shelves: 回復キット + 弾薬箱 + one gear pick (+ sometimes a shard). */
@@ -44,11 +44,9 @@ object Trader {
     fun discounted(price: Int, rescued: Boolean): Int =
         if (rescued) ((price * 4) / 5).coerceAtLeast(1) else price
 
-    /** v2.114 買い取り: the vessel buys gear at half the market's clear-sky price (LORE never sells —
-     *  stories are found, not traded). Always at least 1屑, so nothing is worthless. */
+    /** v2.114 買い取り: the vessel buys ANY backpack item at half the market's clear-sky price
+     *  (資料品 included). Always at least 1屑, so nothing is worthless. */
     fun sellPrice(item: ItemDef): Int = (Market.priceFor(item, 0f) / 2).coerceAtLeast(1)
-
-    fun sellable(item: ItemDef): Boolean = item.kind != ItemKind.LORE
     const val SHARD_CHANCE = 0.5f
     private const val GEAR_MARKUP = 1.2f // no gratitude discount out here
     private const val SALT = 0x71A_DE72L

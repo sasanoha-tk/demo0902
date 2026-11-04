@@ -36,7 +36,6 @@ data class AttackSpec(
 data class EnemyDef(
     val name: String,
     var id: String = "", // v2.113 図鑑: the roster key, stamped by defaultEnemies() — a stable save id
-    val lore: String = "", // v2.182 図録: a calm codex line (JA source of truth; SpeciesLoreEn mirrors EN by id)
 
     val tier: String = "normal",
     val color: String = "#b24a4a",
@@ -54,8 +53,6 @@ data class EnemyDef(
     val mercyThreshold: Float = 0f,
     val canBeg: Boolean = false,
     val canHideAndRest: Boolean = false,
-    val canSpeak: Boolean = false, // intelligent creatures emit short speech bubbles
-    val speechStyle: String = "", // v2.82: the voice's register ("mechanical"/"savage"/"archaic"/"polite"; "" = plain)
     val familyRole: FamilyRole = FamilyRole.NONE, // child/elder/guardian/king drive protection + morale
     val biome: PlanetBiome? = null, // null = generic (space waves); set = lives on that planet type (surface only)
     // Living Planets wildlife (mute animals, driven by WildlifeSystem). Legacy-safe defaults keep a creature HOSTILE.

@@ -56,28 +56,20 @@ import io.github.panda17tk.arpg.input.TouchButton
 import io.github.panda17tk.arpg.input.TouchControls
 import io.github.panda17tk.arpg.math.Rng
 import io.github.panda17tk.arpg.planet.PlanetBiome
-import io.github.panda17tk.arpg.planet.PlanetQuest
-import io.github.panda17tk.arpg.planet.QuestKind
 import io.github.panda17tk.arpg.render.Fonts
 import io.github.panda17tk.arpg.render.Hud
 import io.github.panda17tk.arpg.render.PlayerPose
 import io.github.panda17tk.arpg.render.SceneRenderer
 import io.github.panda17tk.arpg.render.TouchOverlay
-import io.github.panda17tk.arpg.save.Achievement
-import io.github.panda17tk.arpg.save.Achievements
-import io.github.panda17tk.arpg.save.Challenge
 import io.github.panda17tk.arpg.save.DeathRelic
 import io.github.panda17tk.arpg.save.PlanetMemoryCodec
 import io.github.panda17tk.arpg.save.PreferencesMemoryStore
 import io.github.panda17tk.arpg.save.PreferencesRelicStore
 import io.github.panda17tk.arpg.save.PreferencesRunSaveStore
 import io.github.panda17tk.arpg.save.RunSaveDto
-import io.github.panda17tk.arpg.save.Scores
 import io.github.panda17tk.arpg.sim.DesyncGauge
 import io.github.panda17tk.arpg.sim.Drift
-import io.github.panda17tk.arpg.sim.Epithet
 import io.github.panda17tk.arpg.sim.EventKind
-import io.github.panda17tk.arpg.sim.MemoryCoreLog
 import io.github.panda17tk.arpg.sim.PlanetCardInfo
 import io.github.panda17tk.arpg.sim.PlanetEvent
 import io.github.panda17tk.arpg.sim.PlanetContext
@@ -102,11 +94,9 @@ import io.github.panda17tk.arpg.sim.WorldMode
 import io.github.panda17tk.arpg.sim.WorldState
 import io.github.panda17tk.arpg.sim.Weather
 import io.github.panda17tk.arpg.sim.WeatherKind
-import io.github.panda17tk.arpg.sim.WreckLog
 import io.github.panda17tk.arpg.ui.HudLayout
 import io.github.panda17tk.arpg.ui.InvTab
 import io.github.panda17tk.arpg.ui.InventoryLayout
-import io.github.panda17tk.arpg.ui.Logbook
 import io.github.panda17tk.arpg.ui.Modals
 import io.github.panda17tk.arpg.ui.Onboarding
 import io.github.panda17tk.arpg.ui.Overlay
@@ -192,28 +182,22 @@ internal fun GameScreen.drawHud(paused: Boolean, sta: Float, staMax: Float, over
             )
         }
         if (gw.gameOver.isOver) {
-            val bestText = when {
-                challengeMode && newBest -> "検証記録更新！  ${Challenge.codeFor(challengeWeek)} ウェーブ ${Scores.chBestWave}" // v2.102
-                challengeMode -> "検証記録  ${Challenge.codeFor(challengeWeek)} ウェーブ ${Scores.chBestWave}  撃破 ${Scores.chBestKills}"
-                simMode && newBest -> "訓練記録更新！  ウェーブ ${Scores.simBestWave}" // v2.62
-                simMode -> "訓練記録  ウェーブ ${Scores.simBestWave}  撃破 ${Scores.simBestKills}"
-                newBest -> "自己ベスト更新！  汚染深度 ${Scores.bestWave}"
-                else -> "ベスト  汚染深度 ${Scores.bestWave}  撃破 ${Scores.bestKills}"
-            }
             val mins = (runTime / 60f).toInt(); val secs = (runTime % 60f).toInt()
             Hud.gameOver(
                 shapes, batch, font, Fonts.title, hudViewport,
-                gw.waveState.num, gw.gameOver.kills, bestText, Modals.gameOverButtons(hudW, hudH),
-                summary = listOf( // v2.59: the run's obituary
-                    "第${session.spaceSeed}星系　星間同期復旧 ${syncPercent()}%",
-                    "呼び名 『${Epithet.of(session.memory.memories.values)}』　航行時間 %d:%02d".format(mins, secs),
+                gw.waveState.num, gw.gameOver.kills,
+                if (simMode) "訓練シミュレーション" else "通常ラン",
+                Modals.gameOverButtons(hudW, hudH),
+                summary = listOf( // this run's own numbers — no all-time records any more
+                    "星系 #${session.spaceSeed}　星間同期復旧 ${syncPercent()}%",
+                    "航行時間 %d:%02d".format(mins, secs),
                 ),
             )
         }
         if (overlay == Overlay.INVENTORY) drawInventory()
         if (overlay == Overlay.TRADER) drawTraderShop() // v2.100 行商船
         if (overlay == Overlay.TUNING) drawTuning() // v2.111: the knob popup rides the register too
-        if (overlay == Overlay.PAUSE) Hud.pause(shapes, batch, font, Fonts.title, hudViewport, Modals.pauseButtons(hudW, hudH, pauseHasMemory(), simMode, challengeMode))
+        if (overlay == Overlay.PAUSE) Hud.pause(shapes, batch, font, Fonts.title, hudViewport, Modals.pauseButtons(hudW, hudH, pauseHasMemory(), simMode))
         if (overlay == Overlay.HELP) Hud.help(shapes, batch, font, Fonts.title, hudViewport, Modals.helpButtons(hudW, hudH).first(), HELP_LINES)
         if (overlay == Overlay.FORGET) Hud.forget(shapes, batch, font, Fonts.title, hudViewport, Modals.forgetButtons(hudW, hudH))
         if (overlay == Overlay.MEMORY) {
@@ -343,13 +327,11 @@ internal fun GameScreen.drawObjectiveHint(paused: Boolean, hudW: Float, hudH: Fl
         val onPad = playerOnEscapePad()
         val hint = when { // v2.170: the how-to lines obey 操作ヒント like their space twins
             onPad -> if (controlHints) "[L] 離陸" else null
-            biome != null -> SurfaceObjective.hudLine(biome, elites, ws.society, ws.context ?: PlanetContext.NEUTRAL, ws.rememberedPlanet)
+            biome != null -> SurfaceObjective.hudLine(biome, elites, ws.society, ws.context ?: PlanetContext.NEUTRAL)
             else -> if (controlHints) "[L] 離陸して宇宙へ" else null
         }
     // Goal chips (LP v2.26) right under the main objective line, rebuilt only when inputs change.
-    // v2.45: the planet's standing request (星の依頼) rides the same chip row with live progress.
-        val chips = (if (biome != null) surfaceChips(biome, ws, elites) else emptyList()) +
-            listOfNotNull(questChip(ws))
+        val chips = (if (biome != null) surfaceChips(biome, ws, elites) else emptyList())
         if (!paused && !choosing) {
             val lines = listOfNotNull(hint) + (if (chips.isEmpty()) emptyList() else listOf(chips.joinToString("　　")))
             Hud.hintPanel(shapes, batch, font, hudViewport, lines, hudH - HINT_TOP)
@@ -359,34 +341,6 @@ internal fun GameScreen.drawObjectiveHint(paused: Boolean, hudW: Float, hudH: Fl
 /** v2.153: the one compass — dominant cardinal arrow toward (dx, dy), world y-down. */
 private fun arrowFor(dx: Float, dy: Float): String =
     if (kotlin.math.abs(dx) >= kotlin.math.abs(dy)) { if (dx >= 0f) "→" else "←" } else { if (dy >= 0f) "↓" else "↑" }
-
-/** v2.45/68 星の依頼: this visit's progress toward a request of [kind]. */
-internal fun GameScreen.questProgress(kind: QuestKind, ws: WorldState): Int = when (kind) {
-    // v2.72 連鎖: each stage counts from the snapshot taken when the previous one settled.
-        QuestKind.ELITES -> ws.questElites - ws.questBaseElites
-        QuestKind.KILLS -> ws.questKills - ws.questBaseKills
-        QuestKind.DUST -> ws.questDust - ws.questBaseDust
-        QuestKind.CORE -> if (ws.coreVisited) 1 else 0
-        QuestKind.PROTECT -> ws.questPredators - ws.questBasePredators // v2.69
-        QuestKind.OBSERVE -> (ws.questTime - ws.questBaseTime).toInt() // v2.69: whole seconds
-    }
-
-/** v2.45/72 星の依頼: the chip shows the CURRENT link of the chain, or the satisfied star. */
-internal fun GameScreen.questChip(ws: WorldState): String? {
-        val pid = session.landedPlanetId ?: return null
-        val b = ws.biome ?: return null
-        if (ws.questStage >= PlanetQuest.CHAIN) return "依頼 完了 — この星は満ちている"
-        val q = PlanetQuest.questFor(pid, b, ws.questStage)
-        val prog = questProgress(q.kind, ws)
-        val key = prog.coerceAtMost(q.target) + ws.questStage * 1000
-        if (key != questChipKey) {
-            val pay = io.github.panda17tk.arpg.planet.WeatherQuest.rewardFor(q, ws.weather) // v2.109
-            val bonus = if (pay > q.rewardDust) "　※この空なら${pay}屑" else ""
-            questChip = "依頼${ws.questStage + 1}/${PlanetQuest.CHAIN}　${q.line}$bonus　$prog/${q.target}"
-            questChipKey = key
-        }
-        return questChip
-    }
 
 /** The cached surface goal chips (max 2); rebuilt only when the deciding inputs change (§14.2). */
 internal fun GameScreen.surfaceChips(biome: PlanetBiome, ws: WorldState, elites: Int): List<String> {
@@ -444,7 +398,6 @@ internal fun GameScreen.drawInventory() {
             val craft = if (n >= 2 && GearCraft.craftable(d)) "【合成可】" else ""
             when (d.kind) {
                 ItemKind.CONSUMABLE -> "【使】${d.name}$count　─　${d.desc}"
-                ItemKind.LORE -> "【読】『${d.name}』$count　─　${d.desc}"
                 else -> if (d.desc.isEmpty()) "$craft${d.name}$count" else "$craft${d.name}$count　─　${d.desc}"
             }
         }
@@ -457,11 +410,6 @@ internal fun GameScreen.drawInventory() {
             shapes, batch, font, Fonts.title, hudViewport, invTab,
             slotTexts, itemLines, gw.visited, ptx, pty,
             if (invNoteT > 0f) invNote else null,
-            loreTitle = readingLore?.name,
-            // v2.163 英語化第4弾: whole-text swap — the readables are letters, not token soup
-            loreLines = readingLore?.let { d ->
-                (if (io.github.panda17tk.arpg.i18n.Lang.en) io.github.panda17tk.arpg.i18n.LoreEn.textOf(d.id) else null) ?: d.lore
-            }?.split("\n") ?: emptyList(),
             controlLabel = "操作: " + (if (controlSwap) "銃=ボタン / 近接=右スティック" else "近接=ボタン / 銃=右スティック") + "　(タップで入替)",
             marketLines = marketLines, marketFooter = marketFooter,
             logLines = if (invTab == InvTab.LOG) logbookLines() else emptyList(),
@@ -583,22 +531,21 @@ private val cNavPad = com.badlogic.gdx.graphics.Color.valueOf("7fe08f")    // th
 private val cNavMemory = com.badlogic.gdx.graphics.Color.valueOf("8fd0ff") // the archive's light
 private val cNavVault = com.badlogic.gdx.graphics.Color.valueOf("c9a0ff")  // the sealed deep
 
-/** v2.46 航海日誌: the run's present tense + all-time bests + what each visited star remembers. */
+/** The run's present tense + what each visited star remembers — plain state, no prose. */
 internal fun GameScreen.logbookLines(): List<String> {
         val (dust, shards) = with(gw.world) {
             val m = gw.player[Materials]; m.dust to m.shards
         }
         val planetLines = session.memory.memories.entries.take(10).map { (id, s) ->
-            val facts = SocietyMemorySummary.factLines(s)
-            "星$id　" + (facts.firstOrNull()?.first ?: "記憶は薄い")
+            "星$id　敵対 ${(s.hostility * 100f).toInt()}　好意 ${(s.mercy * 100f).toInt()}　生態攪乱 ${(s.ecologicalDisruption * 100f).toInt()}"
         }
-        return Logbook.lines(
-            session.spaceSeed.toInt(), gw.waveState.num, gw.gameOver.kills, dust, shards,
-            Scores.bestWave, Scores.bestKills, planetLines,
-            epithet = Epithet.of(session.memory.memories.values),
-            stability = DesyncGauge.stability(gw.waveState.num),
-            syncPercent = syncPercent(),
-        ) + Achievements.logLines() // v2.62: the service record closes the book
+        return listOf(
+            "星系 #${session.spaceSeed}　汚染深度 ${gw.waveState.num}　宙域安定 ${DesyncGauge.stability(gw.waveState.num)}%",
+            "今回の撃破 ${gw.gameOver.kills}　星屑 $dust　ゲート鍵 $shards",
+            "星間同期復旧 ${syncPercent()}%",
+            "",
+            "星の記憶",
+        ) + planetLines.ifEmpty { listOf("まだどの星にも知られていない") }
     }
 
 /** v2.43 市: rows + footer for the MARKET tab. A hostile world's stalls are simply shut. */
@@ -614,7 +561,7 @@ internal fun GameScreen.marketView(): Pair<List<String>, String> {
         val dust = with(gw.world) { gw.player[Materials].dust }
         val lines = Market.stockFor(planetId).mapIndexed { i, item ->
             if (i in marketSold) "─ 売約済 ─"
-            else "${'$'}{item.name}　【${'$'}{Market.priceFor(item, ws.society.mercy)}屑】"
+            else "${item.name}　【${Market.priceFor(item, ws.society.mercy)}屑】"
         }
-        return lines to "所持 星屑 ${'$'}dust　行をタップで購入"
+        return lines to "所持 星屑 ${dust}　行をタップで購入"
     }

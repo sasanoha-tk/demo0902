@@ -2,8 +2,9 @@ package io.github.panda17tk.arpg.save
 
 /**
  * v2.103 セーブスロット: three independent journeys. Each slot owns its run save, its universe
- * memory and its death relic; the workshop, achievements, endings and settings stay account-wide.
- * Slot 0 keeps the pre-slot keys, so every existing save simply becomes slot 1 on screen.
+ * memory and its death relic; the ending archive — the clears that gate NG+ — and the settings
+ * stay account-wide. Slot 0 keeps the pre-slot keys, so every existing save simply becomes
+ * slot 1 on screen.
  */
 object SaveSlots {
     const val COUNT = 3
@@ -15,7 +16,7 @@ object SaveSlots {
     fun summary(slot: Int): String? = try {
         PreferencesRunSaveStore(slot).load()?.let { dto ->
             val place = if (dto.mode == "SURFACE") "地表" else "宇宙"
-            "第${dto.spaceSeed}星系　$place　同期汚染 ${dto.wave}"
+            "星系 #${dto.spaceSeed}　$place　同期汚染 ${dto.wave}"
         }
     } catch (_: Throwable) { null }
 

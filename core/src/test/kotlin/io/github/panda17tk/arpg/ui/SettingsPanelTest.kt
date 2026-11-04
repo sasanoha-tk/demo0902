@@ -11,7 +11,7 @@ class SettingsPanelTest {
         assertEquals(
             listOf(
                 SettingsPanel.SOUND, SettingsPanel.VOLUME, SettingsPanel.HAPTICS, SettingsPanel.LEFTY,
-                SettingsPanel.CONTROL_HINTS, SettingsPanel.LORE_HINTS,
+                SettingsPanel.CONTROL_HINTS,
                 SettingsPanel.SHAKE, SettingsPanel.SOFT_FLASH, SettingsPanel.AIM_ASSIST, SettingsPanel.LANGUAGE, SettingsPanel.OCEAN, SettingsPanel.PERF, SettingsPanel.CLOSE_LABEL, // v2.96/v2.112/v2.115/v2.165/v2.167
             ),
             bs.map { it.label },
@@ -38,12 +38,10 @@ class SettingsPanelTest {
         }
     }
 
-    @Test fun `the settings chip mirrors the records chip and clears the menu`() {
+    @Test fun `the settings chip sits clear of the title menu`() {
         for ((w, h) in listOf(320f to 640f, 360f to 780f, 420f to 900f)) {
             val chip = TitleLayout.settingsButton(w, h)
-            val rec = TitleLayout.recordsButton(w, h)
             assertTrue(chip.x >= 0f && chip.x + chip.w <= w && chip.y + chip.h <= h)
-            assertTrue(chip.x + chip.w <= rec.x, "chips must not overlap at $w x $h")
             for (other in TitleLayout.buttons(w, h, hasSave = true)) {
                 val disjoint = chip.x + chip.w <= other.x || other.x + other.w <= chip.x ||
                     chip.y + chip.h <= other.y || other.y + other.h <= chip.y

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/** v2.142 英語化第3弾: species and item names render in EN mode — the bestiary reads in English. */
+/** v2.142: species and item names render in EN mode - the HUD, banners and shop use them. */
 class LangSpeciesTest {
     @AfterEach fun reset() { Lang.en = false }
 
@@ -15,8 +15,8 @@ class LangSpeciesTest {
         assertEquals("Tyrant Shark", Lang.tr("暴君鮫"))
         assertEquals("Isle Whale", Lang.tr("島鯨"))
         assertEquals("Fang Wolf", Lang.tr("牙オオカミ"))
-        // a bestiary-style composed line translates through the SUB pass
-        assertTrue(Lang.tr("討伐図鑑 島鯨×3").contains("Isle Whale"), "the field book line carries the EN name")
+        // the kill banner composes its count onto the name slot
+        assertEquals("Isle Whale", Lang.tr("島鯨"))
     }
 
     @Test fun `every roster species name has an EN mapping`() {

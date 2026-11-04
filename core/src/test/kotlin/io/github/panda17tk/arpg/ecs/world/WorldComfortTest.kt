@@ -12,7 +12,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.tan
 
-/** v2.112 快適性第2弾: the aim lean, and the pause menu naming the proving run honestly. */
+/** v2.112 快適性第2弾: the aim lean, and the pause menu naming the training field honestly. */
 class WorldComfortTest {
     private fun tankDef() = GameConfig().enemies.getValue("zombie").copy(attacks = emptyList(), hp = 5000f)
 
@@ -44,8 +44,6 @@ class WorldComfortTest {
     }
 
     @Test fun `the pause menu names the mode it would end`() {
-        val challenge = Modals.pauseButtons(360f, 800f, includeMemory = false, simActive = true, challengeActive = true)
-        assertTrue(challenge.any { it.label == "検証ランを終了" }, "a proving run says so")
         val training = Modals.pauseButtons(360f, 800f, includeMemory = false, simActive = true)
         assertTrue(training.any { it.label == "訓練を終了" })
         val plain = Modals.pauseButtons(360f, 800f)

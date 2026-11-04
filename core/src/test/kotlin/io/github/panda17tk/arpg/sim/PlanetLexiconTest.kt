@@ -16,12 +16,4 @@ class PlanetLexiconTest {
             assertTrue(PlanetLexicon.sacred(s).isNotBlank(), "blank word for $s")
         }
     }
-
-    @Test fun `every story seed except NONE has an omen`() {
-        for (seed in PlanetStorySeed.values()) {
-            val omen = PlanetLexicon.omen(seed)
-            if (seed == PlanetStorySeed.NONE) assertNull(omen, "NONE must carry no omen")
-            else assertTrue(!omen.isNullOrBlank(), "blank omen for $seed")
-        }
-    }
 }

@@ -48,7 +48,7 @@ class TraderRaidSystem : IntervalSystem() {
                 if (alive == 0) {
                     worldState.traderRaid = 2
                     worldState.traderRescued = true
-                    waveState.announce = "行商船を守り抜いた — 店の品に感謝の値引き"
+                    waveState.announce = "行商船を守り抜いた — 店の品を値引き"
                 }
             }
         }

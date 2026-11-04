@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/** v2.93 エンディング: the threshold, the core's rest, and the words that close the story. */
+/** v2.93/2.192: the ending as a system - the threshold, the core's rest, the numeric close. */
 class EndgameTest {
     @Test fun `the core surfaces only when the sync tops out`() {
         assertFalse(Endgame.ready(89))
         assertTrue(Endgame.ready(90)) // v2.155 結末への道: the door opens where runs actually reach
-        assertEquals(90, Endgame.THRESHOLD, "the cap stays 99 — the missing percent remains the story")
+        assertEquals(90, Endgame.THRESHOLD, "the cap stays 99 - the last percent is never earned")
     }
 
     @Test fun `the core rests just off the gate's shoulder`() {
@@ -19,20 +19,30 @@ class EndgameTest {
         assertEquals(710f, cy)
     }
 
-    @Test fun `the dialogue closes the story and both endings have words`() {
-        assertTrue(Endgame.PAGES.size >= 3, "a real conversation, not a toast")
-        for (page in Endgame.PAGES) assertTrue(page.isNotEmpty() && page.all { it.isNotBlank() })
-        assertTrue(Endgame.PAGES.last().any { it.contains("選") }, "the last page carries the question")
-        assertTrue(Endgame.CHOICE_SLEEP.isNotBlank() && Endgame.CHOICE_DRIFT.isNotBlank())
-        assertTrue(Endgame.EPILOGUE.size >= 3, "the record closes with more than one breath")
-        assertTrue(Endgame.EPILOGUE.last().contains("閉じる"))
-        assertTrue(Endgame.DRIFT_LINE.isNotBlank())
-        // v2.185 第3の結末: the earned close carries its own words too
-        assertTrue(Endgame.CHOICE_UNBIND.isNotBlank())
-        assertTrue(Endgame.EPILOGUE_UNBIND.size >= 3 && Endgame.EPILOGUE_UNBIND.last().contains("閉じる"))
-        // v2.189 もう一つの結末: the dark mirror has words too
-        assertTrue(Endgame.CHOICE_RECKON.isNotBlank())
-        assertTrue(Endgame.EPILOGUE_RECKON.size >= 3 && Endgame.EPILOGUE_RECKON.last().contains("閉じる"))
+    @Test fun `the close is the run numbers and four choice labels`() {
+        // v2.192: no story text survives - pages and the close are built from run numbers
+        val pages = Endgame.pages(wave = 12, stardust = 76, syncPercent = 90, clears = 0)
+        assertEquals(3, pages.size, "fixed shape - the draw and the tap handler must never disagree")
+        assertTrue(pages.all { it.isNotEmpty() && it.all { line -> line.isNotBlank() } })
+        assertEquals("到達波 12", pages[0][0])
+        assertEquals("所持 星屑 76", pages[0][1])
+        assertEquals("外部同期 90%", pages[0][2])
+        assertEquals("クリア回数 0", pages[1][0])
+        assertEquals("NG+ 未解放", pages[1][1], "the first clear has not happened yet")
+        assertTrue(Endgame.pages(12, 76, 90, 1)[1][1].contains("解放"), "NG+ reads unlocked once a clear is on record")
+        assertEquals("外部同期 残り 1%", pages[2][0], "the percent still owed is what the choice is about")
+        assertEquals("選択", pages[2][1])
+        // the four doors are labels, not sentences
+        for (c in listOf(Endgame.CHOICE_SLEEP, Endgame.CHOICE_DRIFT, Endgame.CHOICE_UNBIND, Endgame.CHOICE_RECKON))
+            assertTrue(c.isNotBlank())
+        // v2.93/2.185/2.189: the close names the choice taken, then counts this run
+        val epi = Endgame.epilogue(Endgame.CHOICE_DRIFT, wave = 12, stardust = 76, clears = 1)
+        assertEquals("同期完了", epi[0])
+        assertEquals("選択 ${Endgame.CHOICE_DRIFT}", epi[1])
+        assertEquals("到達波 12", epi[2])
+        assertEquals("所持 星屑 76", epi[3])
+        assertEquals("クリア回数 1", epi[4], "the clear just counted is already in the summary")
+        assertTrue(Endgame.DRIFT_LINE.isNotBlank(), "the drift toast still names what happened")
     }
 
     @Test fun `the gentle path opens only to a clean, trusted record`() { // v2.185 第3の結末

@@ -13,7 +13,6 @@ object TitleLayout {
             if (hasSave) add("つづきから")
             add("はじめから")
             add("旧式戦闘訓練")
-            add("検証ラン") // v2.102: 今週の宙域 — same seed, same loadout, all week
         }
         val bw = min(320f, w * 0.72f)
         val top = h * 0.46f
@@ -22,21 +21,11 @@ object TitleLayout {
         }
     }
 
-    /** v2.64 記録: a quiet corner chip, top-right — the service record lives behind it. */
-    fun recordsButton(w: Float, h: Float): UiButton = UiButton(w - 104f, h - 52f, 92f, 40f, "記録")
-
-    /** v2.180 今日の宙域: the daily proving run, docked under 記録 (a chip, not a fifth card —
-     *  the centre column already brushes the bottom chips on short screens). */
-    fun dailyButton(w: Float, h: Float): UiButton = UiButton(w - 104f, h - 100f, 92f, 40f, "今日の空")
-
-    /** v2.66 設定: its twin, top-left — every toggle moved into the settings panel behind it. */
+    /** 設定: a quiet corner chip, top-left — every toggle lives behind it. */
     fun settingsButton(w: Float, h: Float): UiButton = UiButton(12f, h - 52f, 92f, 40f, "設定")
 
-    /** v2.90 工房: the keeper's workshop, docked under 設定 — permanent boons live behind it. */
-    fun workshopButton(w: Float, h: Float): UiButton = UiButton(12f, h - 100f, 92f, 40f, "工房")
-
-    /** v2.97 難易度: the run-mode chip under 工房 — taps cycle 安定運転/標準/過負荷. */
-    fun difficultyButton(w: Float, h: Float, label: String): UiButton = UiButton(12f, h - 148f, 92f, 40f, label)
+    /** 難易度: the run-mode chip under 設定 — taps cycle 安定運転/標準/過負荷. */
+    fun difficultyButton(w: Float, h: Float, label: String): UiButton = UiButton(12f, h - 100f, 92f, 40f, label)
 
     /** v2.98 調整: the passcode door, bottom-left — quiet until you know it's there. */
     fun tuneButton(w: Float, h: Float, label: String): UiButton = UiButton(12f, 12f, 92f, 40f, label)

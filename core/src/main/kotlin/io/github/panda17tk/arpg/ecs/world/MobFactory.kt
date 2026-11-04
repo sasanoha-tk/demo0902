@@ -9,7 +9,6 @@ import io.github.panda17tk.arpg.ecs.components.Facing
 import io.github.panda17tk.arpg.ecs.components.Health
 import io.github.panda17tk.arpg.ecs.components.Mob
 import io.github.panda17tk.arpg.ecs.components.MobAction
-import io.github.panda17tk.arpg.ecs.components.Speech
 import io.github.panda17tk.arpg.ecs.components.Transform
 import io.github.panda17tk.arpg.ecs.components.Velocity
 
@@ -43,7 +42,6 @@ object MobFactory {
                 mercyThreshold = def.mercyThreshold, canBeg = def.canBeg, canHideAndRest = def.canHideAndRest,
                 familyRole = def.familyRole,
             )
-            it += Speech(canSpeak = def.canSpeak)
         }
     }
 }

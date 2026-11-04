@@ -2,7 +2,7 @@ package io.github.panda17tk.arpg.sim
 
 /**
  * v2.97 難易度 — three ways to run the same universe. Pure multipliers, injected into the
- * world like the workshop boons: the sim reads them, the title screen picks and persists.
+ * world like any other carried modifier: the sim reads them, the title screen picks and persists.
  * 安定運転 softens the keeper's wounds and speeds the mend; 過負荷 deepens the surge but
  * every kill sheds an extra dust pile. 標準 is the universe as designed.
  */

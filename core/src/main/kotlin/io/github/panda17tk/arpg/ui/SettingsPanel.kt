@@ -4,8 +4,8 @@ import kotlin.math.min
 
 /**
  * v2.66 設定パネル — the title's toggle pair had outgrown its corner, so every switch moved
- * into one glass panel behind a 設定 chip: sound, haptics, the mirrored layout, and the two
- * hint channels from the tutorial design (操作ヒント / 世界観ヒント). Pure geometry + labels.
+ * into one glass panel behind a 設定 chip: sound, haptics, the mirrored layout, and the
+ * control-hint channel from the tutorial design. Pure geometry + labels.
  */
 object SettingsPanel {
     const val SOUND = "サウンド"
@@ -13,7 +13,6 @@ object SettingsPanel {
     const val HAPTICS = "振動"
     const val LEFTY = "左利き配置"
     const val CONTROL_HINTS = "操作ヒント"
-    const val LORE_HINTS = "世界観ヒント"
     const val SHAKE = "画面の揺れ"      // v2.96: motion comfort — shake & recoil kick
     const val SOFT_FLASH = "閃光をやわらげる" // v2.96: photosensitivity — the white-outs dim
     const val AIM_ASSIST = "エイム補助"       // v2.112: bullets lean gently toward nearby foes
@@ -23,7 +22,7 @@ object SettingsPanel {
     const val CLOSE_LABEL = "閉じる"
 
     /** Toggle rows in display order — index-stable for the screen's state mapping. */
-    val TOGGLES = listOf(SOUND, VOLUME, HAPTICS, LEFTY, CONTROL_HINTS, LORE_HINTS, SHAKE, SOFT_FLASH, AIM_ASSIST, LANGUAGE, OCEAN, PERF)
+    val TOGGLES = listOf(SOUND, VOLUME, HAPTICS, LEFTY, CONTROL_HINTS, SHAKE, SOFT_FLASH, AIM_ASSIST, LANGUAGE, OCEAN, PERF)
 
     /** One-line whispers under each toggle name (drawn smaller by the screen). */
     fun hintFor(label: String): String = when (label) {
@@ -32,7 +31,6 @@ object SettingsPanel {
         HAPTICS -> "被弾の振動"
         LEFTY -> "スティック右・ボタン左に反転"
         CONTROL_HINTS -> "操作ガイド"
-        LORE_HINTS -> "記憶核の語り・遭難記録"
         SHAKE -> "画面シェイクと反動"
         SOFT_FLASH -> "撃破の白フラッシュを弱める"
         AIM_ASSIST -> "射撃が近くの敵へわずかに寄る"

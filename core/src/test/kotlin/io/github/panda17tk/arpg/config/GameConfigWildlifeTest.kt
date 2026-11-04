@@ -12,10 +12,6 @@ class GameConfigWildlifeTest {
         assertTrue(wildlife.size >= 6, "expected several wild species, got ${wildlife.size}")
     }
 
-    @Test fun `wildlife never speak`() {
-        for (w in wildlife) assertTrue(!w.canSpeak, "${w.name} should be mute")
-    }
-
     @Test fun `every wild animal belongs to a biome — or swims the void`() {
         // v2.130 宙を泳ぐもの: space fish are the one sanctioned exception — biome-less, but
         // then they must ignore gravity (they swim the void, not fall through it).

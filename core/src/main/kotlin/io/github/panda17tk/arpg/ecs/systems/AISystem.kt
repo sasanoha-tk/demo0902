@@ -18,7 +18,6 @@ import io.github.panda17tk.arpg.ecs.components.Health
 import io.github.panda17tk.arpg.ecs.components.Mob
 import io.github.panda17tk.arpg.ecs.components.MobAction
 import io.github.panda17tk.arpg.ecs.components.PlayerTag
-import io.github.panda17tk.arpg.ecs.components.Speech
 import io.github.panda17tk.arpg.ecs.components.Transform
 import io.github.panda17tk.arpg.ecs.components.Velocity
 import io.github.panda17tk.arpg.map.TileMap
@@ -26,7 +25,6 @@ import io.github.panda17tk.arpg.math.Rng
 import io.github.panda17tk.arpg.pathfinding.FlowField
 import io.github.panda17tk.arpg.pathfinding.Los
 import io.github.panda17tk.arpg.pathfinding.SpatialGrid
-import io.github.panda17tk.arpg.planet.PlanetBiome
 import io.github.panda17tk.arpg.sim.CircleCollision
 import io.github.panda17tk.arpg.sim.Collision
 import io.github.panda17tk.arpg.sim.CrashModel
@@ -37,9 +35,7 @@ import io.github.panda17tk.arpg.sim.Family
 import io.github.panda17tk.arpg.sim.Leveling
 import io.github.panda17tk.arpg.sim.PlanetField
 import io.github.panda17tk.arpg.sim.AiPressure
-import io.github.panda17tk.arpg.sim.SocietySpeechLines
 import io.github.panda17tk.arpg.sim.SocietyTuning
-import io.github.panda17tk.arpg.sim.SpeechLines
 import io.github.panda17tk.arpg.sim.Tribes
 import io.github.panda17tk.arpg.sim.Tuning
 import io.github.panda17tk.arpg.sim.WorldState
@@ -55,11 +51,11 @@ import kotlin.math.sqrt
 /**
  * Enemy AI: flow-field chase + separation + contact + data-driven attack dispatch (legacy ai.js +
  * runAttacks). Each tick runs the same pipeline: decay timers → read the player → scan neighbours
- * (one grid pass) → flocking → behavioural mind + speech → steer → integrate & collide → contact
+ * (one grid pass) → flocking → behavioural mind → steer → integrate & collide → contact
  * damage → attack dispatch. Wild animals are driven by WildlifeSystem instead.
  */
 class AISystem(private val mobGrid: SpatialGrid<Entity>) :
-    IteratingSystem(family { all(Mob, Transform, Velocity, Body, Health, Facing, MobAction, CreatureMind, Speech) }) {
+    IteratingSystem(family { all(Mob, Transform, Velocity, Body, Health, Facing, MobAction, CreatureMind) }) {
 
     private val map: TileMap = world.inject()
     private val flow: FlowField = world.inject()
@@ -114,13 +110,12 @@ class AISystem(private val mobGrid: SpatialGrid<Entity>) :
         val f = entity[Facing]
         val h = entity[Health]
         val action = entity[MobAction]
-        val speech = entity[Speech]
         val dt = deltaTime
         val ai = config.ai
         // Living Planets: how this planet's society currently feels (null in space / when no context) → small nudges.
         val aiP = worldState.context?.let { SocietyTuning.ai(worldState.society.toPressure(it)) }
 
-        decayMotionAndTimers(m, v, h, speech, dt)
+        decayMotionAndTimers(m, v, h, dt)
 
         // While charging/blinking, MobActionSystem drives the mob; skip normal AI.
         if (action.charging || action.blinking) return
@@ -146,7 +141,7 @@ class AISystem(private val mobGrid: SpatialGrid<Entity>) :
         if (aiP?.gratitude == true && !(scan.wardNear && scan.wildPredatorNear)) scan.wardThreatened = false
         applyFlocking(t, v, eff, ai.sepRadius)
 
-        val aggressive = advanceMind(mind, m, h, speech, dist, see, dt, aiP)
+        val aggressive = advanceMind(mind, h, dist, see, dt, aiP)
 
         // Tactics scale with smarts (tribe intelligence + level): smart tribes take cover + kite.
         val smarts = Leveling.smarts(tribes.intelligenceOf(m.tribe), m.level)
@@ -159,14 +154,12 @@ class AISystem(private val mobGrid: SpatialGrid<Entity>) :
     }
 
     /** Decay knockback/drift velocity and the per-mob timers (always, even while charging). */
-    private fun decayMotionAndTimers(m: Mob, v: Velocity, h: Health, speech: Speech, dt: Float) {
+    private fun decayMotionAndTimers(m: Mob, v: Velocity, h: Health, dt: Float) {
         val decay = 0.02f.pow(dt)
         v.vx *= decay; v.vy *= decay
         // Decay gravity/crash momentum (drift) lightly so flung mobs coast, then AI reasserts control.
         val driftDecay = MOB_DRIFT_DECAY.pow(dt)
         v.driftX *= driftDecay; v.driftY *= driftDecay
-        if (speech.cooldown > 0f) speech.cooldown -= dt
-        if (speech.remaining > 0f) speech.remaining -= dt
         if (m.bumpCd > 0f) m.bumpCd -= dt
         if (m.dashCd > 0f) m.dashCd -= dt
         if (h.hitFlash > 0f) h.hitFlash -= dt
@@ -239,7 +232,7 @@ class AISystem(private val mobGrid: SpatialGrid<Entity>) :
      * Returns whether the creature is now aggressive (Hostile / Protect / Rally).
      */
     private fun advanceMind(
-        mind: CreatureMind, m: Mob, h: Health, speech: Speech,
+        mind: CreatureMind, h: Health,
         dist: Float, see: Boolean, dt: Float, aiP: AiPressure?,
     ): Boolean {
         val guardian = mind.protectiveness >= GUARDIAN_MIN || mind.familyRole == FamilyRole.GUARDIAN
@@ -250,7 +243,6 @@ class AISystem(private val mobGrid: SpatialGrid<Entity>) :
         // A very hostile world skips the courtesy of a warning (a PROUD world always warns first, so never skips).
         val canWarn = !mind.provoked && hasStanding && aiP?.skipWarn != true
         val playerNear = see && dist < WARN_RANGE
-        val prevState = mind.state
         // A child's death (or harm, on a vengeful world) makes guardians treat the very-near player as a threat;
         // a forgiving/indebted world eases creatures toward begging a touch sooner.
         val rally = guardian && (scan.wardThreatened || (aiP?.rallyEager == true && playerNear))
@@ -258,32 +250,7 @@ class AISystem(private val mobGrid: SpatialGrid<Entity>) :
         updateMind(mind, h, dist, dt, rally, scan.kingNear, scan.wardHurt, playerNear, canWarn, effMercy)
         val aggressive = mind.state == CreatureState.Hostile || mind.state == CreatureState.Protect ||
             mind.state == CreatureState.Rally
-        if (speech.canSpeak && mind.state != prevState && speech.cooldown <= 0f) {
-            speak(speech, mind, m, aggressive)
-        }
         return aggressive
-    }
-
-    /** Voice a mind-state change: the society's memory first, then the state's flavour line. */
-    private fun speak(speech: Speech, mind: CreatureMind, m: Mob, aggressive: Boolean) {
-        // A reacting creature voices the society's memory first — a child-killer is named as one (inert if blank).
-        val socLine = if (aggressive) SocietySpeechLines.triggerFor(worldState.society)?.let { SocietySpeechLines.pick(it, rng.nextInt(1000)) } else null
-        if (socLine != null) {
-            speech.text = socLine; speech.remaining = BUBBLE_TIME; speech.cooldown = SPEECH_CD
-        } else {
-            var trig = SpeechLines.forState(mind.state)
-            // Flavour the first encounter: kings decree, lone survivors muse, guards rally to the throne.
-            if (trig == SpeechLines.Trigger.Warn) {
-                if (mind.familyRole == FamilyRole.KING) trig = SpeechLines.Trigger.KingEncounter
-                else if (m.def.biome == PlanetBiome.LONELY) trig = SpeechLines.Trigger.LonelyEncounter
-            } else if (trig == SpeechLines.Trigger.ProtectChild && scan.kingNear) {
-                trig = SpeechLines.Trigger.ProtectKing
-            }
-            if (trig != null) {
-                val line = SpeechLines.pick(trig, rng.nextInt(1000), m.def.speechStyle) // v2.82: each species its own register
-                if (line != null) { speech.text = line; speech.remaining = BUBBLE_TIME; speech.cooldown = SPEECH_CD }
-            }
-        }
     }
 
     /** Pick this tick's movement (flee/hide/brawl/cover/kite/chase), set facing, and queue a dash burst. */
@@ -489,8 +456,6 @@ class AISystem(private val mobGrid: SpatialGrid<Entity>) :
         private const val REST_HEAL = 14f // HP/sec regained while resting
         private const val REST_RECOVER = 0.85f // rested back to this HP fraction → rejoin the fight
         private val REST_INTERRUPT = Tuning.TILE * 4f // player this close interrupts hide/rest
-        private const val BUBBLE_TIME = 2.2f // seconds a speech bubble stays up
-        private const val SPEECH_CD = 4f // minimum seconds between a creature's lines
         private const val GUARDIAN_MIN = 0.5f // protectiveness at/above this makes a creature a guardian
         private val WARD_THREAT_RANGE = Tuning.TILE * 5f // player this close to a ward → guardians defend it
         private const val WARD_HURT_FRAC = 0.5f // a ward/king below this HP fraction makes defenders rally

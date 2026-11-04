@@ -7,16 +7,16 @@ import io.github.panda17tk.arpg.math.Rng
  * from its seed. The trait colors the waves (fill), the economy (dust), the pull of planets
  * (gravity) and the surge pressure (quota). Pure rules; the surge/gravity systems consult them.
  */
-enum class SystemTrait(val label: String, val line: String) {
-    NONE("", ""),
-    STORMY("嵐の星系", "この星系は嵐が絶えない — 敵は荒ぶり、星屑は多くこぼれる"),
-    HEAVY("重い星系", "この星系は重い — 惑星の引力が強く働く"),
-    CUSTODIAL("保守の星系", "この星系は保守機構が濃い — 清掃の巡回が絶えない"),
-    RICH("豊かな星系", "この星系は豊かだ — 星屑は多いが、汚染も深い"),
-    SWARMING("多生の星系", "この星系は生に満ちている — 海は濃く、牙も多い"), // v2.177 濃い外縁
-    DESOLATE("痩せた星系", "この星系は痩せている — 敵はまばらだが、星屑の実りは厚い"), // v2.183 濃い外縁II
-    RESONANT("残響の星系", "この星系は響く — 波の異変が起きやすい"),
-    AIRY("軽い星系", "この星系は軽い — 惑星の引力が弱く、身が軽い"),
+enum class SystemTrait(val label: String) {
+    NONE(""),
+    STORMY("嵐の星系"),
+    HEAVY("重い星系"),
+    CUSTODIAL("保守の星系"),
+    RICH("豊かな星系"),
+    SWARMING("多生の星系"), // v2.177 濃い外縁
+    DESOLATE("痩せた星系"), // v2.183 濃い外縁II
+    RESONANT("残響の星系"),
+    AIRY("軽い星系"),
 }
 
 object SystemTraits {
