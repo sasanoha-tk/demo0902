@@ -28,6 +28,12 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        # Upstream default is 'tools platform-tools'. Google retired the legacy 'tools'
+        # package, so that default now dies in 16s with "Failed to find package 'tools'".
+        # Ask only for what survives; AGP fetches platforms/build-tools itself once the
+        # licenses are accepted (the action accepts them).
+        with:
+          packages: platform-tools
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
